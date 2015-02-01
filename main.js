@@ -4,19 +4,14 @@
  */
 var app = angular.module('lgh', ['sharpAttributes']);
 
-app.directive('mainContent', function () {
-	return {
-		restrict: 'E',
-		templateUrl: 'main-content.html'
-	};
-});
-
 app.directive('metaStuff', function () {
 	return {
 		restrict: 'E',
 		templateUrl: 'meta-stuff.html'
 	};
 });
+
+var initialLeft;
 
 // Calculate the slope of a line, given two points.
 // Points are given as two element arrays, i.e., [x, y]
@@ -30,7 +25,7 @@ function calculateSlope(point1, point2) {
 }
 
 // Retrieve the left point of the background line, from the given $window.
-function getBackgrounLeftPoint($window) {
+function getBackgroundLeftPoint($window) {
 	var windowHeight = $window.innerHeight;
 	var thirdOfWindowHeight = windowHeight / 3;
 	return [
@@ -52,7 +47,7 @@ function getBackgroundRightPoint($window) {
 
 // Retrieve the degrees of the slope from a given window.
 function getBackgroundDegrees($window) {
-	var p1 = getBackgrounLeftPoint($window);
+	var p1 = getBackgroundLeftPoint($window);
 	var p2 = getBackgroundRightPoint($window);
 	var degrees = calculateSlope(p1, p2);
 	return degrees;
@@ -63,10 +58,29 @@ function endsWithSemicolon(str) {
 	return str.substr(str.length - 1) == ';';
 }
 
+// Extracts the first style name found in a given string.
+function extractStyleName(stringToAdd) {
+	var indexOfColon = stringToAdd.indexOf(':');
+	// Does the string even contain a semicolon?
+	if (indexOfColon < 1) {
+		return -1;
+	}
+	return stringToAdd.substr(0, indexOfColon);
+}
+
+// Retrieve the value of the existing style we are trying to add (if it exists).
+function getExistingStyle($element, stringToAdd) {
+	//console.dir($element);
+	var styleName = extractStyleName(stringToAdd);
+	//console.dir(styleName);
+	//console.dir($element.css(styleName));
+}
+
 // Add a given string to the given element (jqLite selector) without clobbering
 // existing style string.
 function addToElementStyle($element, stringToAdd) {
 	var originalStyle = $element[0].style.cssText;
+	getExistingStyle($element, stringToAdd);
 	var updatedStyle = originalStyle.trim();
 	if (!endsWithSemicolon(updatedStyle)) {
 		updatedStyle += ';';
@@ -92,38 +106,7 @@ function applyToChildren($element, func) {
 	}
 }
 
-// Apply the rotation rules to the given element, based on the given window.
-function applyRotation($window, $element) {
-	var degrees = getBackgroundDegrees($window);
-	applyCSSRotation($element, degrees);
-	applyToChildren($element, function ($child) {
-		applyCSSRotation($child, -degrees);
-	});
-}
-
-// Apply the left adjustment to keep the bottom right corner in place.
-// Applies counter adjustment to the children elements.
-function applyLeftAdjustment($element, rotatedPoints) {
-	var leftAdjustment = $element[0].offsetLeft - rotatedPoints[2][0];
-	addToElementStyle($element, 'left: ' + leftAdjustment + 'px');
-	applyToChildren($element, function ($child) {
-		addToElementStyle($child, 'padding-left: ' + (-leftAdjustment) + 'px');
-	});
-}
-
-// Apply width adjustment to keep the rotated element filling the window.
-function applyWidthAdjustment($window, $element) {
-	var originalLocation = getCornerPoints($element);
-	var degrees = getBackgroundDegrees($window);
-	var radians = degrees * (Math.PI/180);
-	var rotatedPoints = getRotatedCoordinates(originalLocation, originalLocation[0], radians);
-
-	var missingWidth = $window.innerWidth - rotatedPoints[1][0];
-	var widthAdjustment = $element[0].offsetWidth + missingWidth;
-
-	addToElementStyle($element, 'width: ' + widthAdjustment + 'px');
-}
-
+// Retrieve the coordinates of the corner points of a given element.
 function getCornerPoints($element) {
 	var offset = $element[0].getBoundingClientRect();
 	var top = offset.top;
@@ -153,12 +136,46 @@ function calculateRotatedPoint(point, pointOfRotation, radians) {
 	return [newX, newY];
 }
 
+// Get the given coordinates after applying a rotation to them.
 function getRotatedCoordinates(points, pointOfRotation, degrees) {
 	var result = [];
 	for (var i = 0; i < points.length; i++) {
 		result.push(calculateRotatedPoint(points[i], pointOfRotation, degrees));
 	}
 	return result;
+}
+
+// Apply the rotation rules to the given element, based on the given window.
+function applyRotation($window, $element) {
+	var degrees = getBackgroundDegrees($window);
+	applyCSSRotation($element, degrees);
+	applyToChildren($element, function ($child) {
+		applyCSSRotation($child, -degrees);
+	});
+}
+
+// Apply the left adjustment to keep the bottom right corner in place.
+// Applies counter adjustment to the children elements.
+function applyLeftAdjustment($element, rotatedPoints) {
+	var leftAdjustment = $element[0].offsetLeft - rotatedPoints[2][0];
+	addToElementStyle($element, 'left: ' + leftAdjustment + 'px');
+	applyToChildren($element, function ($child) {
+		leftAdjustment -= initialLeft;	
+		addToElementStyle($child, 'padding-left: ' + (-leftAdjustment) + 'px');
+	});
+}
+
+// Apply width adjustment to keep the rotated element filling the window.
+function applyWidthAdjustment($window, $element) {
+	var originalLocation = getCornerPoints($element);
+	var degrees = getBackgroundDegrees($window);
+	var radians = degrees * (Math.PI/180);
+	var rotatedPoints = getRotatedCoordinates(originalLocation, originalLocation[0], radians);
+
+	var missingWidth = $window.innerWidth - rotatedPoints[1][0];
+	var widthAdjustment = $element[0].offsetWidth + missingWidth;
+
+	addToElementStyle($element, 'width: ' + widthAdjustment + 'px');
 }
 
 // Apply the rotation, and makes adjustments to the position and width to keep
@@ -174,13 +191,15 @@ function applyTransformation($window, $element) {
 	applyRotation($window, $element);
 }
 
+// The name directive.
 app.directive('name', ['$window', function ($window) {
 	return {
 		restrict: 'E',
 		templateUrl: 'name.html',
 		link: function ($scope, $element, $attributes) {
+			initialLeft = $element[0].offsetLeft;
 			// Apply the transformation right away.
-			//applyTransformation($window, $element);
+			applyTransformation($window, $element);
 			// And apply it whenever the window is resized.
 			$window.addEventListener('resize', function () {
 				applyTransformation($window, $element);
@@ -189,111 +208,11 @@ app.directive('name', ['$window', function ($window) {
 	};
 }]);
 
-app.directive('backgroundTop', ['$window', function ($window) {
-	function draw($window, polygonElement) {
-		var windowWidth = $window.innerWidth;
-		var windowHeight = $window.innerHeight;
-
-		var thirdOfWindowHeight = windowHeight / 3;
-		var p1 = {x: 0, y: 0};
-		var p2 = {x: 0, y: windowHeight - thirdOfWindowHeight};
-		var p3 = {x: windowWidth, y: thirdOfWindowHeight};
-		var p4 = {x: windowWidth, y: 0};
-
-		var points = ''
-		points += p1.x + ',' + p1.y + ' ';
-		points += p2.x + ',' + p2.y + ' ';
-		points += p3.x + ',' + p3.y + ' ';
-		points += p4.x + ',' + p4.y;
-
-		polygonElement.attr('points', points);
-	}
+app.directive('inverseColorName', function () {
 	return {
 		restrict: 'E',
-		templateUrl: 'background-top.html',
-		link: function ($scope, $element, $attributes) {
-			var polygon = $element.find('polygon');
-			draw($window, polygon);
-			$window.addEventListener('resize', function () {
-				draw($window, polygon);
-			});
-
-			var fillColor = '#AAAAAA';
-			polygon.css('fill', fillColor);
-		}
+		templateUrl: 'name.html'
 	};
-}]);
-
-app.directive('backgroundBottom', ['$window', function ($window) {
-	function draw($window, polygonElement) {
-		var windowWidth = $window.innerWidth;
-		var windowHeight = $window.innerHeight;
-
-		var thirdOfWindowHeight = windowHeight / 3;
-
-		var p1 = {x: 0, y: windowHeight - thirdOfWindowHeight};
-		var p2 = {x: windowWidth, y: thirdOfWindowHeight};
-		var p3 = {x: windowWidth, y: windowHeight};
-		var p4 = {x: 0, y: windowHeight};
-
-		var points = ''
-		points += p1.x + ',' + p1.y + ' ';
-		points += p2.x + ',' + p2.y + ' ';
-		points += p3.x + ',' + p3.y + ' ';
-		points += p4.x + ',' + p4.y;
-
-		polygonElement.attr('points', points);
-	}
-	return {
-		restrict: 'E',
-		templateUrl: 'background-bottom.html',
-		link: function ($scope, $element, $attributes) {
-			var polygon = $element.find('polygon');
-			draw($window, polygon);
-			$window.addEventListener('resize', function () {
-				draw($window, polygon);
-			});
-
-			var fillColor = '#328A2E';
-			polygon.css('fill', fillColor);
-		}
-	};
-}]);
-
-
-app.directive('backgroundAccent', ['$window', function ($window) {
-	function draw($window, polygonElement) {
-		var windowWidth = $window.innerWidth;
-		var windowHeight = $window.innerHeight;
-
-		var thirdOfWindowHeight = windowHeight / 3;
-		var p1 = {x: 0, y: 0};
-		var p2 = {x: 0, y: windowHeight - thirdOfWindowHeight};
-		var p3 = {x: windowWidth, y: thirdOfWindowHeight};
-		var p4 = {x: windowWidth, y: windowHeight};
-
-		var points = ''
-		points += p1.x + ',' + p1.y + ' ';
-		points += p2.x + ',' + p2.y + ' ';
-		points += p3.x + ',' + p3.y + ' ';
-		points += p4.x + ',' + p4.y;
-
-		polygonElement.attr('points', points);
-	}
-	return {
-		restrict: 'E',
-		templateUrl: 'background-top.html',
-		link: function ($scope, $element, $attributes) {
-			var polygon = $element.find('polygon');
-			draw($window, polygon);
-			$window.addEventListener('resize', function () {
-				draw($window, polygon);
-			});
-
-			var fillColor = '#AAAAAA';
-			polygon.css('fill', fillColor);
-		}
-	};
-}]);
+});
 
 
