@@ -14,7 +14,7 @@ module.exports = function (grunt) {
             src: {
                 files: [
                     'index.html',
-                    'main.js',
+                    '*.js',
                     'main.css',
                     'background-top.html',
                     'background-bottom.html',
