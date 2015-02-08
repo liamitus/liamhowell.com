@@ -281,7 +281,7 @@ app.directive('rotatedBackground', ['$window', function ($window) {
       link: function ($scope, $element, $attributes) {
 	 // Set config data.
 	 initialLeft = $element[0].offsetLeft;
-	 leftPercent = parsePercent($attributes.leftpercent, 1 - 1/3);
+	 leftPercent = 1 - parsePercent($attributes.leftpercent, 1/3);
 	 rightPercent = parsePercent($attributes.rightpercent, 1/3);
 	 initialPosition = getCornerPoints($element);
 
