@@ -1,6 +1,6 @@
 /** 
  * Liam Howell
- * 01-31-2015
+ * 02-08-2015
  */
 var app = angular.module('lgh', ['sharpAttributes']);
 
@@ -12,14 +12,14 @@ app.directive('metaStuff', function () {
 });
 
 // The name directive.
-app.directive('name', ['$window', function ($window) {
+app.directive('liam', ['$window', function ($window) {
 	return {
 		restrict: 'E',
 		templateUrl: 'name.html'
 	};
 }]);
 
-app.directive('inverseColorName', function () {
+app.directive('bizarroLiam', function () {
 	return {
 		restrict: 'E',
 		templateUrl: 'name.html'

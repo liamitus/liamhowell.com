@@ -7,6 +7,7 @@ html, body {
     width: 100%;
     height: 100%;
     font-family: 'Lato', sans-serif;
+    /*overflow: hidden;*/
 }
 svg {
     z-index: -1;
@@ -39,29 +40,52 @@ div.header div.text {
     /*-webkit-transform: rotate(30deg);*/
 }
 
-.name {
+.name-and-title {
+    position:absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    overflow: hidden;
+}
+
+.liam-headers {
     position: absolute;
-    top: 25px;
-    left: 25px;
+    /*top: 25px;*/
+    /*left: 25px;*/
     font-family: 'Bree Serif', serif;
     font-size: 2em;
 }
 
-name {
-    position: absolute;
-    left: 25px;
-    /*top: 300px;*/
-    width: 100%;
-    height: 50%;
-    z-index: 3;
+.bizarro-colors {
     background: steelblue;
     color: white;
+}
+
+.rotated {
+    position: absolute;
+    /*left: 25px;*/
+    /*top: 300px;*/
+    width: 100%;
+    height: 100%;
+    z-index: 3;
     transform-origin: top left;
     overflow: hidden;
 }
 
-name h1, name h2 {
+liam h1, liam h2 {
     transform-origin: top left;
+}
+
+/* Setting margin or position will affect post-rotation position. */
+.name {
+    padding-top: 25px;
+    padding-left: 25px;
+}
+
+/* Setting margin or position will affect post-rotation position. */
+.title {
+    padding-left: 25px;
 }
 
 .counter-rotation-wrapper {
