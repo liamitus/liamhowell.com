@@ -26,4 +26,9 @@ app.directive('bizarroLiam', function () {
 	};
 });
 
-
+app.directive('mainContent', function () {
+	return {
+		restrict: 'E',
+		templateUrl: 'templates/main-content.html'
+	};
+});
