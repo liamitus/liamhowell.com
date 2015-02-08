@@ -17,26 +17,33 @@ function getErrorObject(){
 
 // Sends a debug message to console.
 function d(msg) {
+   if (!debuggingEnabled) {
+      return;
+   }
+
    // Get line number of calling function.
    var err = getErrorObject();
    var caller_line = err.stack.split("\n")[4];
    var index = caller_line.indexOf("at ");
    var clean = caller_line.slice(index+2, caller_line.length);
+   
+   if (arguments.length > 1) {
+      console.warn(clean, arguments);
+      return;
+   }
 
-   if (debuggingEnabled) {
-      switch (typeof msg) {
-	 case 'undefined':
-	    console.debug(clean);
-	    break;
-	 case 'number':
-	 case 'string':
-	    console.warn(msg + clean);
-	    break;
-	 case 'object':
-	    msg.__DEBUG_calledFrom__ = clean;
-	 default:
-	    console.dir(msg);
-      }
+   switch (typeof msg) {
+      case 'undefined':
+	 console.debug(clean);
+	 break;
+      case 'number':
+      case 'string':
+	 console.warn(msg + clean);
+	 break;
+      case 'object':
+	 msg.__DEBUG_calledFrom__ = clean;
+      default:
+	 console.dir(msg);
    }
 };
 
@@ -283,6 +290,7 @@ app.directive('rotatedBackground', ['$window', function ($window) {
 	 initialLeft = $element[0].offsetLeft;
 	 leftPercent = 1 - parsePercent($attributes.leftpercent, 1/3);
 	 rightPercent = parsePercent($attributes.rightpercent, 1/3);
+	 //degrees = parseFloat($attributes.angle);
 	 initialPosition = getCornerPoints($element);
 
 	 // Apply the transformation right away.

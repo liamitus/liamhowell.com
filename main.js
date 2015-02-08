@@ -7,7 +7,7 @@ var app = angular.module('lgh', ['sharpAttributes']);
 app.directive('metaStuff', function () {
 	return {
 		restrict: 'E',
-		templateUrl: 'meta-stuff.html'
+		templateUrl: 'templates/meta-stuff.html'
 	};
 });
 
@@ -15,14 +15,14 @@ app.directive('metaStuff', function () {
 app.directive('liam', ['$window', function ($window) {
 	return {
 		restrict: 'E',
-		templateUrl: 'name.html'
+		templateUrl: 'templates/name.html'
 	};
 }]);
 
 app.directive('bizarroLiam', function () {
 	return {
 		restrict: 'E',
-		templateUrl: 'name.html'
+		templateUrl: 'templates/bizarro-name.html'
 	};
 });
 

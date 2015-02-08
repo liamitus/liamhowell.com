@@ -16,10 +16,7 @@ module.exports = function (grunt) {
                     'index.html',
                     '*.js',
                     'main.css',
-                    'background-top.html',
-                    'background-bottom.html',
-                    'meta-stuff.html',
-                    'main-content.html'
+                    'templates/*.html'
                 ],
                 options: {
                     livereload: true

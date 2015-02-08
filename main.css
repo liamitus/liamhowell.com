@@ -40,7 +40,7 @@ div.header div.text {
     /*-webkit-transform: rotate(30deg);*/
 }
 
-.name-and-title {
+.rotation-wrapper {
     position:absolute;
     top: 0;
     left: 0;
@@ -73,7 +73,7 @@ div.header div.text {
     overflow: hidden;
 }
 
-liam h1, liam h2 {
+bizarro-liam > h1, bizarro-liam > h2 {
     transform-origin: top left;
 }
 
