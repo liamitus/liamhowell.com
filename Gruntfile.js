@@ -5,6 +5,12 @@ module.exports = function (grunt) {
         connect: {
             server: {
                 options: {
+                    port: 80,
+                    hostname: '*'
+                }
+            },
+            dev: {
+                options: {
                     port: 3000,
                     hostname: '*'
                 }
@@ -29,6 +35,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('default', ['connect', 'watch']);
+    grunt.registerTask('default', ['connect:dev', 'watch']);
+    grunt.resisterTask('server', ['connect:server']);
 
 };
