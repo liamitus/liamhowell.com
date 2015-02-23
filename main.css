@@ -79,6 +79,8 @@ liam {
     /*min-width: 700px;*/
     margin: 80px auto 0;
 
+    padding-bottom: 100px;
+
     font-family: 'Lato', sans-serif;
     font-size: 1.2em;
 }
@@ -102,10 +104,6 @@ liam {
     padding-left: 10%;
     padding-right: 10%;
     margin-bottom: 30px;
-}
-
-.footer-spacing {
-    height: 100px;
 }
 
 /* Media Queries */
