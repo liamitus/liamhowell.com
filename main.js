@@ -2,7 +2,7 @@
  * Liam Howell
  * 02-23-2015
  */
-var app = angular.module('lgh', []);
+var app = angular.module('lgh', ['prettyColors']);
 
 // Creates a new directive from a given name.
 // Accepts an optional file name for the template URL, otherwise will use

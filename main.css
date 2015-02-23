@@ -9,6 +9,20 @@ html, body {
     font-family: 'Lato', sans-serif;
 }
 
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.clickable {
+    cursor: pointer;
+    cursor: hand;
+}
+
 /* My name and title */
 .rotation-wrapper {
     position:absolute;
@@ -29,7 +43,7 @@ html, body {
 }
 
 .bizarro-colors {
-    background: steelblue;
+    background: #17334a;
     color: white;
 }
 
