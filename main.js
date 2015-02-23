@@ -1,6 +1,6 @@
 /** 
  * Liam Howell
- * 02-08-2015
+ * 02-23-2015
  */
 var app = angular.module('lgh', ['sharpAttributes']);
 
@@ -11,24 +11,26 @@ app.directive('metaStuff', function () {
 	};
 });
 
-// The name directive.
-app.directive('liam', ['$window', function ($window) {
-	return {
-		restrict: 'E',
-		templateUrl: 'templates/name.html'
-	};
-}]);
+// Creates a new directive from a given name.
+// Accepts an optional file name for the template URL, otherwise will use
+// the name param for the file name.
+// Also accepts an optional transclude parameter.
+function directive(name, templateFileName, transclude) {
+	templateFileName = templateFileName || name;
+	app.directive(name, function () {
+		return {
+			restrict: 'E',
+			transclude: transclude,
+			templateUrl: 'templates/' + templateFileName + '.html'
+		};
+	});
+}
 
-app.directive('bizarroLiam', function () {
-	return {
-		restrict: 'E',
-		templateUrl: 'templates/bizarro-name.html'
-	};
-});
+directive('liam', 'name');
+directive('bizarroLiam', 'bizarro-name');
+directive('mainContent', 'main-content', true);
+directive('photo');
+directive('about');
+directive('cv');
+directive('contact');
 
-app.directive('mainContent', function () {
-	return {
-		restrict: 'E',
-		templateUrl: 'templates/main-content.html'
-	};
-});
