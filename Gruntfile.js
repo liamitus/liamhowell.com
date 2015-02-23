@@ -36,6 +36,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('default', ['connect:dev', 'watch']);
-    grunt.resisterTask('server', ['connect:server']);
+    grunt.registerTask('server', ['connect:server']);
 
 };
