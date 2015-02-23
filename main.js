@@ -4,13 +4,6 @@
  */
 var app = angular.module('lgh', ['sharpAttributes']);
 
-app.directive('metaStuff', function () {
-	return {
-		restrict: 'E',
-		templateUrl: 'templates/meta-stuff.html'
-	};
-});
-
 // Creates a new directive from a given name.
 // Accepts an optional file name for the template URL, otherwise will use
 // the name param for the file name.
