@@ -2,7 +2,7 @@
  * Liam Howell
  * 02-23-2015
  */
-var app = angular.module('lgh', ['sharpAttributes']);
+var app = angular.module('lgh', []);
 
 // Creates a new directive from a given name.
 // Accepts an optional file name for the template URL, otherwise will use
