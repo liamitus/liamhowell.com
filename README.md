@@ -3,5 +3,5 @@ My homepage
 
 ## TODO
 
- - Make the corner flair a pretty color.
  - Random background with adjusted CSS rules.
+ - Add inverse color copy of the page info to the bizarro element.
