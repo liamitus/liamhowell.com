@@ -29,11 +29,16 @@
             link: function ($scope, $element, $attrs) {
                 var element = $element[0];
                 var startRandomized = $attrs.prettyColor;
+                var before = element.style.background;
+                var after = before;
                 if (startRandomized) {
                     element.style.background = pickColor();
                 }
                 $element.on('click', function () {
-                    element.style.background = pickColor();
+                    while (before === after) {
+                        after = element.style.background = pickColor();
+                    }
+                    before = after;
                 });
             }
         };
