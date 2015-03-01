@@ -17,8 +17,43 @@
         'steelblue' // The original
     ];
 
+    // The set of colors currently in the loop.
+    var currentColorSet = generateRandomColorSet;
+
+    function generateRandomColorSet() {
+        return currentColorSet = shuffle(colors.slice());
+    }
+
+    // Fisher-Yates (aka Knuth) Shuffle
+    // Thanks to stackoverflow user :
+    // http://stackoverflow.com/a/2450976/1729686
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex ;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+    
+    // Pick a random color from the set of colors.
+    // Uses a temporary stack of colors to improve consistency.
     function pickColor() {
-        return colors[Math.floor(Math.random() * colors.length)];
+        if (currentColorSet.length <= 0) {
+            generateRandomColorSet();
+        }
+        console.dir(currentColorSet);
+        return currentColorSet.pop();
     }
 
     var app = angular.module('prettyColors', []);
