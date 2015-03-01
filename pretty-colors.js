@@ -52,7 +52,6 @@
         if (currentColorSet.length <= 0) {
             generateRandomColorSet();
         }
-        console.dir(currentColorSet);
         return currentColorSet.pop();
     }
 
