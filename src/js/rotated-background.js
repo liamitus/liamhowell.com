@@ -140,7 +140,9 @@ function addToElementStyle($element, stringToAdd) {
 
 // Rotate the given element, by the given degrees.
 function applyCSSRotation($element, degrees) {
-   var rotationCSS = '-webkit-transform: rotate(' + degrees + 'deg)';
+   var rotationCSS = '-webkit-transform: rotate(' + degrees + 'deg);';
+   rotationCSS += '-o-transform: rotate(' + degrees + 'deg);';
+   rotationCSS += 'transform: rotate(' + degrees + 'deg);';
    addToElementStyle($element, rotationCSS);
 }
 

@@ -2,6 +2,8 @@ module.exports = function (grunt) {
     
     grunt.initConfig({
 
+        pkg: grunt.file.readJSON('package.json'),
+
         clean: ['dest'],
 
         copy: {
@@ -9,40 +11,20 @@ module.exports = function (grunt) {
                 files: [
                     {
                         expand: true,
+                        flatten: true,
                         cwd: 'src/',
-                        src: ['*.html'],
+                        src: ['*.html', '*.pdf', 'templates/*', 'fonts/*', 'images/*'],
                         dest: 'dest/'
                     },
                     {
                         expand: true,
                         flatten: true,
                         cwd: 'src/',
-                        src: ['js/lib/*'],
+                        src: ['js/lib/*', 'css/*'],
                         dest: 'dest/'
                     },
                     {
-                        expand: true,
-                        flatten: true,
-                        cwd: 'src/',
-                        src: ['css/*'],
-                        dest: 'dest/'
-                    },
-                    {
-                        expand: true,
-                        cwd: 'src/',
-                        src: ['fonts/*'],
-                        dest: 'dest/'
-                    },
-                    {
-                        expand: true,
-                        cwd: 'src/',
-                        src: ['templates/**'],
-                        dest: 'dest/'
-                    },
-                    {
-                        expand: true,
-                        cwd: 'src/',
-                        src: ['images/**'],
+                        src: ['.htaccess'],
                         dest: 'dest/'
                     }
                 ]
@@ -58,6 +40,11 @@ module.exports = function (grunt) {
         },
 
         uglify: {
+            options: {
+                mangle: true,
+                banner: '/*! (c) <%= pkg.author %> - ' +
+                    '<%= grunt.template.today("mm-dd-yyyy") %> */\n'
+            },
             main: {
                 files: {
                     'dest/main.js': ['src/js/*.js']
@@ -82,7 +69,8 @@ module.exports = function (grunt) {
                 files: [
                     'src/**/*.js',
                     'src/**/*.css',
-                    'src/**/*.html'
+                    'src/**/*.html',
+                    'src/**/*.pdf'
                 ],
                 options: {
                     livereload: true
@@ -99,7 +87,8 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-concat');
 
-    grunt.registerTask('default', ['clean', 'copy', 'concat', 'connect', 'watch']);
+    grunt.registerTask('default', ['dev', 'connect', 'watch']);
+    grunt.registerTask('dev', ['clean', 'copy', 'concat']);
     grunt.registerTask('deploy', ['clean', 'copy', 'uglify']);
 
 };
