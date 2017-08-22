@@ -1,2 +1,445 @@
-/*! (c) Liam Howell - 05-05-2016 */
-function directive(a,b,c){b=b||a,app.directive(a,function(){return{restrict:"E",transclude:c,templateUrl:b+".html"}})}function getErrorObject(){try{throw Error("")}catch(a){return a}}function d(a){if(debuggingEnabled){var b=getErrorObject(),c=b.stack.split("\n")[4],d=c.indexOf("at "),e=c.slice(d+2,c.length);if(arguments.length>1)return void console.warn(e,arguments);switch(typeof a){case"undefined":console.debug(e);break;case"number":case"string":console.warn(a+e);break;case"object":a.__DEBUG_calledFrom__=e;default:console.dir(a)}}}function placeDebugDivs(a){for(var b=5,c=0;c<a.length;c++){var d='<div style="position:absolute;width:'+b+"px;height:"+b+"px;top:"+a[c][1]+"px;left:"+a[c][0]+'px;background:indigo;z-index:10;"></div>';document.body.innerHTML+=d}}function calculateSlope(a,b){var c=b[0]-a[0],d=b[1]-a[1],e=d/c;return e*=100}function getBackgroundLeftPoint(a){var b=a.innerHeight,c=b*leftPercent;return[0,c]}function getBackgroundRightPoint(a){var b=a.innerWidth,c=a.innerHeight,d=c*rightPercent;return[b,d]}function getBackgroundDegrees(a){var b=getBackgroundLeftPoint(a),c=getBackgroundRightPoint(a),d=calculateSlope(b,c);return d}function endsWithSemicolon(a){return";"==a.substr(a.length-1)}function extractStyleName(a){var b=a.indexOf(":");return 1>b?-1:a.substr(0,b)}function getExistingStyle(a,b){extractStyleName(b)}function addToElementStyle(a,b){var c=a[0].style.cssText;getExistingStyle(a,b);var d=c.trim();endsWithSemicolon(d)||(d+=";"),d+=b,endsWithSemicolon(b)||(d+=";"),a[0].style.cssText=d}function applyCSSRotation(a,b){var c="-webkit-transform: rotate("+b+"deg);";c+="-o-transform: rotate("+b+"deg);",c+="transform: rotate("+b+"deg);",addToElementStyle(a,c)}function applyToChildren(a,b){for(var c=a.children(),d=0;d<c.length;d++)b(angular.element(c[d]))}function getCornerPoints(a){var b=a[0].getBoundingClientRect(),c=b.top,d=b.left,e=a[0].offsetWidth,f=a[0].offsetHeight;return[[d,c],[d+e,c],[d,c+f],[d+e,c+f]]}function calculateRotatedPoint(a,b,c){var d=-c,e=a[0],f=a[1],g=b[0],h=b[1],i=g+(e-g)*Math.cos(d)+(f-h)*Math.sin(d),j=h-(e-g)*Math.sin(d)+(f-h)*Math.cos(d);return[i,j]}function getRotatedCoordinates(a,b,c){for(var d=[],e=0;e<a.length;e++)d.push(calculateRotatedPoint(a[e],b,c));return d}function applyRotation(a,b){applyCSSRotation(a,b),applyToChildren(a,function(a){applyCSSRotation(a,-b)})}function calculateLeftAdjustment(a,b){return a[0].offsetLeft-b[2][0]}function applyLeftAdjustment(a,b){addToElementStyle(a,"left: "+b+"px"),applyToChildren(a,function(a){b-=initialLeft,addToElementStyle(a,"padding-left: "+-b+"px")})}function leftAdjustment(a,b){var c=getCornerPoints(a),d=getRotatedCoordinates(c,c[0],b),e=calculateLeftAdjustment(a,d);applyLeftAdjustment(a,e)}function applyWidthAdjustment(a,b){var c=getCornerPoints(b),d=getBackgroundDegrees(a),e=d*(Math.PI/180),f=getRotatedCoordinates(c,c[0],e),g=a.innerWidth-f[1][0],h=b[0].offsetWidth+g;addToElementStyle(b,"width: "+h+"px")}function applyHeightAdjustment(a,b){var c=b[0],e=getCornerPoints(b);d(e);var f=e[0][1];f>0&&(d(c),c.style.top=0,c.style.paddingTop=f+"px")}function calculateWidthAdjustment(a,b,c){var d=a.innerWidth-c[1][0];return b[0].offsetWidth+d}function applyTransformation(a,b){var c=getBackgroundDegrees(a),d=c*(Math.PI/180);leftAdjustment(b,d),applyWidthAdjustment(a,b),applyRotation(b,c)}function parsePercent(a,b){return a?parseFloat(a)/100:b}var app=angular.module("lgh",["prettyColors"]);directive("liam","name"),directive("bizarroLiam","bizarro-name"),directive("mainContent","main-content",!0),directive("photo"),directive("about"),directive("cv"),directive("contact"),console.log(" ___       ___  ________  _____ ______           ___  ___  ________  ___       __   _______   ___       ___          "),console.log("|\\  \\     |\\  \\|\\   __  \\|\\   _ \\  _   \\        |\\  \\|\\  \\|\\   __  \\|\\  \\     |\\  \\|\\  ___ \\ |\\  \\     |\\  \\         "),console.log("\\ \\  \\    \\ \\  \\ \\  \\|\\  \\ \\  \\\\\\__\\ \\  \\       \\ \\  \\\\\\  \\ \\  \\|\\  \\ \\  \\    \\ \\  \\ \\   __/|\\ \\  \\    \\ \\  \\        "),console.log(" \\ \\  \\    \\ \\  \\ \\   __  \\ \\  \\\\|__| \\  \\       \\ \\   __  \\ \\  \\\\\\  \\ \\  \\  __\\ \\  \\ \\  \\_|/_\\ \\  \\    \\ \\  \\       "),console.log("  \\ \\  \\____\\ \\  \\ \\  \\ \\  \\ \\  \\    \\ \\  \\       \\ \\  \\ \\  \\ \\  \\\\\\  \\ \\  \\|\\__\\_\\  \\ \\  \\_|\\ \\ \\  \\____\\ \\  \\____  "),console.log("   \\ \\_______\\ \\__\\ \\__\\ \\__\\ \\__\\    \\ \\__\\       \\ \\__\\ \\__\\ \\_______\\ \\____________\\ \\_______\\ \\_______\\ \\_______\\"),console.log("    \\|_______|\\|__|\\|__|\\|__|\\|__|     \\|__|        \\|__|\\|__|\\|_______|\\|____________|\\|_______|\\|_______|\\|_______|"),console.log("                                                                                                                     "),console.log("Hey friend! Enjoy picking apart my personal site thing: https://github.com/liamitus/liamhowell.com"),function(){function a(){return e=b(d.slice())}function b(a){for(var b,c,d=a.length;0!==d;)c=Math.floor(Math.random()*d),d-=1,b=a[d],a[d]=a[c],a[c]=b;return a}function c(){return e.length<=0&&a(),e.pop()}var d=["#17334a","#d1907a","#7b9e61","#7688a7","#575766","steelblue"],e=a,f=angular.module("prettyColors",[]);f.directive("prettyColor",function(){return{restrict:"A",link:function(a,b,d){var e=b[0],f=d.prettyColor,g=e.style.background,h=g;f&&(e.style.background=c()),b.on("click",function(){for(;g===h;)h=e.style.background=c();g=h})}}})}(document);var debuggingEnabled=!0,initialLeft,leftPercent,rightPercent,initialPosition;app.directive("rotatedBackground",["$window",function(a){return{restrict:"A",link:function(b,c,d){initialLeft=c[0].offsetLeft,leftPercent=1-parsePercent(d.leftpercent,1/3),rightPercent=parsePercent(d.rightpercent,1/3),initialPosition=getCornerPoints(c),applyTransformation(a,c),a.addEventListener("resize",function(){applyTransformation(a,c)})}}}]);
+/** 
+ * Liam Howell
+ * 02-23-2015
+ */
+var app = angular.module('lgh', ['prettyColors']);
+
+// Creates a new directive from a given name.
+// Accepts an optional file name for the template URL, otherwise will use
+// the name param for the file name.
+// Also accepts an optional transclude parameter.
+function directive(name, templateFileName, transclude) {
+	templateFileName = templateFileName || name;
+	app.directive(name, function () {
+		return {
+			restrict: 'E',
+			transclude: transclude,
+			templateUrl: templateFileName + '.html'
+		};
+	});
+}
+
+directive('liam', 'name');
+directive('bizarroLiam', 'bizarro-name');
+directive('mainContent', 'main-content', true);
+directive('photo');
+directive('about');
+directive('cv');
+directive('contact');
+
+function getAge(dateString) {
+    var today = new Date();
+    var birthDate = new Date(dateString);
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+app.filter('age', function() {
+    return function (input) {
+        return getAge(input);
+    };
+});
+
+console.log(' ___       ___  ________  _____ ______           ___  ___  ________  ___       __   _______   ___       ___          ');
+console.log('|\\  \\     |\\  \\|\\   __  \\|\\   _ \\  _   \\        |\\  \\|\\  \\|\\   __  \\|\\  \\     |\\  \\|\\  ___ \\ |\\  \\     |\\  \\         ');
+console.log('\\ \\  \\    \\ \\  \\ \\  \\|\\  \\ \\  \\\\\\__\\ \\  \\       \\ \\  \\\\\\  \\ \\  \\|\\  \\ \\  \\    \\ \\  \\ \\   __/|\\ \\  \\    \\ \\  \\        ');
+console.log(' \\ \\  \\    \\ \\  \\ \\   __  \\ \\  \\\\|__| \\  \\       \\ \\   __  \\ \\  \\\\\\  \\ \\  \\  __\\ \\  \\ \\  \\_|/_\\ \\  \\    \\ \\  \\       ');
+console.log('  \\ \\  \\____\\ \\  \\ \\  \\ \\  \\ \\  \\    \\ \\  \\       \\ \\  \\ \\  \\ \\  \\\\\\  \\ \\  \\|\\__\\_\\  \\ \\  \\_|\\ \\ \\  \\____\\ \\  \\____  ');
+console.log('   \\ \\_______\\ \\__\\ \\__\\ \\__\\ \\__\\    \\ \\__\\       \\ \\__\\ \\__\\ \\_______\\ \\____________\\ \\_______\\ \\_______\\ \\_______\\');
+console.log('    \\|_______|\\|__|\\|__|\\|__|\\|__|     \\|__|        \\|__|\\|__|\\|_______|\\|____________|\\|_______|\\|_______|\\|_______|');
+console.log('                                                                                                                     ');
+console.log('Hey friend! Enjoy picking apart my personal site thing: https://github.com/liamitus/liamhowell.com');
+
+/**
+ * Pretty color randomizer.
+ * Most of the colors come from prettycolors.tumblr.com
+ *
+ * Liam Howell
+ * 02-23-2015
+ */
+(function (document) {
+
+    var colors = [
+        '#17334a', // Dark dark blue
+        '#d1907a', // Faded salmon
+        '#7b9e61', // Faded green
+        '#7688a7', // Faded blue-gray
+        '#575766', // Blue-gray
+        //'#f58275', // Salmon
+        'steelblue' // The original
+    ];
+
+    // The set of colors currently in the loop.
+    var currentColorSet = generateRandomColorSet;
+
+    function generateRandomColorSet() {
+        return currentColorSet = shuffle(colors.slice());
+    }
+
+    // Fisher-Yates (aka Knuth) Shuffle
+    // Thanks to stackoverflow user :
+    // http://stackoverflow.com/a/2450976/1729686
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex ;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+
+            // And swap it with the current element.
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
+    }
+    
+    // Pick a random color from the set of colors.
+    // Uses a temporary stack of colors to improve consistency.
+    function pickColor() {
+        if (currentColorSet.length <= 0) {
+            generateRandomColorSet();
+        }
+        return currentColorSet.pop();
+    }
+
+    var app = angular.module('prettyColors', []);
+
+    app.directive('prettyColor', function () {
+        return {
+            restrict: 'A',
+            link: function ($scope, $element, $attrs) {
+                var element = $element[0];
+                var startRandomized = $attrs.prettyColor;
+                var before = element.style.background;
+                var after = before;
+                if (startRandomized) {
+                    element.style.background = pickColor();
+                }
+                $element.on('click', function () {
+                    while (before === after) {
+                        after = element.style.background = pickColor();
+                    }
+                    before = after;
+                });
+            }
+        };
+    });
+
+})(document);
+
+/** 
+ * Liam Howell
+ * 02-08-2015
+ */
+
+// Config
+var debuggingEnabled = true;
+var initialLeft;
+var leftPercent;
+var rightPercent;
+var initialPosition;
+
+// Used by the debug function to capture line number.
+function getErrorObject(){
+   try { throw Error('') } catch(err) { return err; }
+}
+
+// Sends a debug message to console.
+function d(msg) {
+   if (!debuggingEnabled) {
+      return;
+   }
+
+   // Get line number of calling function.
+   var err = getErrorObject();
+   var caller_line = err.stack.split("\n")[4];
+   var index = caller_line.indexOf("at ");
+   var clean = caller_line.slice(index+2, caller_line.length);
+   
+   if (arguments.length > 1) {
+      console.warn(clean, arguments);
+      return;
+   }
+
+   switch (typeof msg) {
+      case 'undefined':
+	 console.debug(clean);
+	 break;
+      case 'number':
+      case 'string':
+	 console.warn(msg + clean);
+	 break;
+      case 'object':
+	 msg.__DEBUG_calledFrom__ = clean;
+      default:
+	 console.dir(msg);
+   }
+};
+
+function placeDebugDivs(coordinates) {
+   var size = 5;
+   for (var i = 0; i < coordinates.length; i++) {
+      var div = '<div style="position:absolute;' +
+	 'width:' + size + 'px;height:' + size + 'px;' +
+	 'top:' + coordinates[i][1] + 'px;left:' +
+	 coordinates[i][0] + 'px;' +
+	 'background:indigo;z-index:10;"></div>';
+      document.body.innerHTML += div;
+   }
+}
+
+// Calculate the slope of a line, given two points.
+// Points are given as two element arrays, i.e., [x, y]
+// Returns the answer in degrees.
+function calculateSlope(point1, point2) {
+   var deltaX = point2[0] - point1[0];
+   var deltaY = point2[1] - point1[1];
+   var slope = deltaY / deltaX;
+   slope *= 100;
+   return slope;
+}
+
+// Retrieve the left point of the background line, from the given $window.
+function getBackgroundLeftPoint($window) {
+   var windowHeight = $window.innerHeight;
+   var leftHeight = windowHeight * leftPercent;
+   return [
+      0, // x
+      leftHeight // y
+   ];
+}
+
+// Retrieve the right point of the background line, from the given $window.
+function getBackgroundRightPoint($window) {
+   var windowWidth = $window.innerWidth;
+   var windowHeight = $window.innerHeight;
+   var rightHeight = windowHeight * rightPercent;
+   return [
+      windowWidth, // x
+      rightHeight // y
+   ];
+}
+
+// Retrieve the degrees of the slope from a given window.
+function getBackgroundDegrees($window) {
+   var p1 = getBackgroundLeftPoint($window);
+   var p2 = getBackgroundRightPoint($window);
+   var degrees = calculateSlope(p1, p2);
+   return degrees;
+}
+
+// Determine if a given string ends with a semicolon;
+function endsWithSemicolon(str) {
+   return str.substr(str.length - 1) == ';';
+}
+
+// Extracts the first style name found in a given string.
+function extractStyleName(stringToAdd) {
+   var indexOfColon = stringToAdd.indexOf(':');
+   // Does the string even contain a semicolon?
+   if (indexOfColon < 1) {
+      return -1;
+   }
+   return stringToAdd.substr(0, indexOfColon);
+}
+
+// Retrieve the value of the existing style we are trying to add (if it exists).
+function getExistingStyle($element, stringToAdd) {
+   //console.dir($element);
+   var styleName = extractStyleName(stringToAdd);
+   //console.dir(styleName);
+   //console.dir($element.css(styleName));
+}
+
+// Add a given string to the given element (jqLite selector) without clobbering
+// existing style string.
+function addToElementStyle($element, stringToAdd) {
+   var originalStyle = $element[0].style.cssText;
+   getExistingStyle($element, stringToAdd);
+   var updatedStyle = originalStyle.trim();
+   if (!endsWithSemicolon(updatedStyle)) {
+      updatedStyle += ';';
+   }
+   updatedStyle += stringToAdd;
+   if (!endsWithSemicolon(stringToAdd)) {
+      updatedStyle += ';';
+   }
+   $element[0].style.cssText = updatedStyle;
+}
+
+// Rotate the given element, by the given degrees.
+function applyCSSRotation($element, degrees) {
+   var rotationCSS = '-webkit-transform: rotate(' + degrees + 'deg);';
+   rotationCSS += '-o-transform: rotate(' + degrees + 'deg);';
+   rotationCSS += 'transform: rotate(' + degrees + 'deg);';
+   addToElementStyle($element, rotationCSS);
+}
+
+// Apply the given function to the children of the given element.
+function applyToChildren($element, func) {
+   var children = $element.children();
+   for (var i = 0; i < children.length; i++) {
+      func(angular.element(children[i]));
+   }
+}
+
+// Retrieve the coordinates of the corner points of a given element.
+function getCornerPoints($element) {
+   var offset = $element[0].getBoundingClientRect();
+   var top = offset.top;
+   var left = offset.left;
+   var width = $element[0].offsetWidth;
+   var height = $element[0].offsetHeight;
+   return [
+      [left, top], // top left [x, y]
+      [left + width, top], // top right [x, y]
+      [left, top + height], // bottom left [x, y]
+      [left + width, top + height] // bottom right [x, y]
+   ];
+}
+
+function calculateRotatedPoint(point, pointOfRotation, radians) {
+   var theta = -radians; // Invert radians because magic.
+   //console.log(theta);
+   // Coordinates being rotated.
+   var x = point[0];
+   var y = point[1];
+   // Center of rotation.
+   var x0 = pointOfRotation[0];
+   var y0 = pointOfRotation[1];
+   // The rotated coordinates.
+   var newX = x0 + (x - x0) * Math.cos(theta) + (y - y0) * Math.sin(theta);
+   var newY = y0 - (x - x0) * Math.sin(theta) + (y - y0) * Math.cos(theta);
+   return [newX, newY];
+}
+
+// Get the given coordinates after applying a rotation to them.
+function getRotatedCoordinates(points, pointOfRotation, degrees) {
+   var result = [];
+   for (var i = 0; i < points.length; i++) {
+      result.push(calculateRotatedPoint(points[i], pointOfRotation, degrees));
+   }
+   return result;
+}
+
+// Apply the rotation rules to the given element, based on the given window.
+function applyRotation($element, degrees) {
+   applyCSSRotation($element, degrees);
+   applyToChildren($element, function ($child) {
+      applyCSSRotation($child, -degrees);
+   });
+}
+
+// Calculate the distance between the bottom-left coordinate point and the
+// edge of the screen, as a number representing the number of pixels.
+function calculateLeftAdjustment($element, points) {
+   return $element[0].offsetLeft - points[2][0];
+}
+
+// Apply the left adjustment to keep the bottom left corner in place.
+// Applies counter adjustment to the children elements.
+function applyLeftAdjustment($element, leftAdjustment) {
+   //d(leftAdjustment);
+   addToElementStyle($element, 'left: ' + leftAdjustment + 'px');
+   //addToElementStyle($element, 'padding-left: ' + (-leftAdjustment) + 'px');
+   applyToChildren($element, function ($child) {
+      leftAdjustment -= initialLeft;	
+      addToElementStyle($child, 'padding-left: ' + (-leftAdjustment) + 'px');
+   });
+}
+
+// Takes an $element and radians to calculate and apply the left adjustment
+// required to have the bottom left corner be in line with the left edge of the
+// window.
+function leftAdjustment($element, radians) {
+   var coordinates = getCornerPoints($element);
+   var rotatedCoordinates =
+      getRotatedCoordinates(coordinates, coordinates[0], radians);
+   var pixels = calculateLeftAdjustment($element, rotatedCoordinates);
+   applyLeftAdjustment($element, pixels);
+}
+
+// Apply width adjustment to keep the rotated element filling the window.
+function applyWidthAdjustment($window, $element) {
+   var originalLocation = getCornerPoints($element);
+   var degrees = getBackgroundDegrees($window);
+   var radians = degrees * (Math.PI/180);
+   var rotatedPoints = getRotatedCoordinates(originalLocation, originalLocation[0], radians);
+
+   var missingWidth = $window.innerWidth - rotatedPoints[1][0];
+   var widthAdjustment = $element[0].offsetWidth + missingWidth;
+
+   addToElementStyle($element, 'width: ' + widthAdjustment + 'px');
+}
+
+function applyHeightAdjustment($window, $element) {
+   var element = $element[0];
+   var originalLocation = getCornerPoints($element);
+   d(originalLocation);
+   var heightDifference = originalLocation[0][1];
+   if (heightDifference > 0) {
+      d(element);
+      element.style.top = 0;
+      element.style.paddingTop = heightDifference + 'px';
+   }
+}
+
+function calculateWidthAdjustment($window, $element, rotatedPoints) {
+   var missingWidth = $window.innerWidth - rotatedPoints[1][0];
+   return $element[0].offsetWidth + missingWidth;
+}
+
+// Apply the rotation, and makes adjustments to the position and width to keep
+// the corners of the element in the same place prior to rotation.
+function applyTransformation($window, $element) {
+   var degrees = getBackgroundDegrees($window);
+   var radians = degrees * (Math.PI/180);
+
+   //applyHeightAdjustment($window, $element);
+   leftAdjustment($element, radians);
+   applyWidthAdjustment($window, $element);
+   applyRotation($element, degrees);
+}
+
+// Return the given percentage string as a usable percent (e.g. 0.5).
+// If the given string is a falsy value then the given default is returned,
+// (which may be undefined).
+function parsePercent(str, defaultValue) {
+   if (str) {
+      return parseFloat(str) / 100;
+   } else {
+      return defaultValue;
+   }
+}
+
+// The name directive.
+app.directive('rotatedBackground', ['$window', function ($window) {
+   return {
+      restrict: 'A',
+      link: function ($scope, $element, $attributes) {
+	 // Set config data.
+	 initialLeft = $element[0].offsetLeft;
+	 leftPercent = 1 - parsePercent($attributes.leftpercent, 1/3);
+	 rightPercent = parsePercent($attributes.rightpercent, 1/3);
+	 //degrees = parseFloat($attributes.angle);
+	 initialPosition = getCornerPoints($element);
+
+	 // Apply the transformation right away.
+	 applyTransformation($window, $element);
+	 // And apply it whenever the window is resized.
+	 $window.addEventListener('resize', function () {
+	    applyTransformation($window, $element);
+	 });
+      }
+   };
+}]);
+

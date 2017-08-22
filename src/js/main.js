@@ -27,6 +27,23 @@ directive('about');
 directive('cv');
 directive('contact');
 
+function getAge(dateString) {
+    var today = new Date();
+    var birthDate = new Date(dateString);
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
+app.filter('age', function() {
+    return function (input) {
+        return getAge(input);
+    };
+});
+
 console.log(' ___       ___  ________  _____ ______           ___  ___  ________  ___       __   _______   ___       ___          ');
 console.log('|\\  \\     |\\  \\|\\   __  \\|\\   _ \\  _   \\        |\\  \\|\\  \\|\\   __  \\|\\  \\     |\\  \\|\\  ___ \\ |\\  \\     |\\  \\         ');
 console.log('\\ \\  \\    \\ \\  \\ \\  \\|\\  \\ \\  \\\\\\__\\ \\  \\       \\ \\  \\\\\\  \\ \\  \\|\\  \\ \\  \\    \\ \\  \\ \\   __/|\\ \\  \\    \\ \\  \\        ');
