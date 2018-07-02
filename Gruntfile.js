@@ -89,6 +89,6 @@ module.exports = function (grunt) {
 
     grunt.registerTask('default', ['dev', 'connect', 'watch']);
     grunt.registerTask('dev', ['clean', 'copy', 'concat']);
-    grunt.registerTask('deploy', ['clean', 'copy', 'uglify']);
+    grunt.registerTask('build', ['clean', 'copy', 'uglify']);
 
 };
