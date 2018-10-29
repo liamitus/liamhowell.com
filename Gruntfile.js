@@ -1,94 +1,98 @@
+'use strict'
+
 module.exports = function (grunt) {
-    
-    grunt.initConfig({
 
-        pkg: grunt.file.readJSON('package.json'),
+  grunt.initConfig({
 
-        clean: ['dest'],
+    pkg: grunt.file.readJSON('package.json'),
+    ec2: '../permissions/aws.json',
 
-        copy: {
-            main: {
-                files: [
-                    {
-                        expand: true,
-                        flatten: true,
-                        cwd: 'src/',
-                        src: ['*.html', '*.pdf', 'templates/*', 'fonts/*', 'images/*'],
-                        dest: 'dest/'
-                    },
-                    {
-                        expand: true,
-                        flatten: true,
-                        cwd: 'src/',
-                        src: ['js/lib/*', 'css/*'],
-                        dest: 'dest/'
-                    },
-                    {
-                        src: ['.htaccess'],
-                        dest: 'dest/'
-                    }
-                ]
-            },
-        },
+    clean: ['dest'],
 
-        concat: {
-            main: {
-                files: {
-                    'dest/main.js': ['src/js/*.js']
-                }
-            }
-        },
+    copy: {
+      main: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            cwd: 'src/',
+            src: ['*.html', '*.pdf', 'templates/*', 'fonts/*', 'images/*'],
+            dest: 'dest/'
+          },
+          {
+            expand: true,
+            flatten: true,
+            cwd: 'src/',
+            src: ['js/lib/*', 'css/*'],
+            dest: 'dest/'
+          },
+          {
+            src: ['.htaccess'],
+            dest: 'dest/'
+          }
+        ]
+      },
+    },
 
-        uglify: {
-            options: {
-                mangle: true,
-                banner: '/*! (c) <%= pkg.author %> - ' +
-                    '<%= grunt.template.today("mm-dd-yyyy") %> */\n'
-            },
-            main: {
-                files: {
-                    'dest/main.js': ['src/js/*.js']
-                }
-            }
-        },
-
-        connect: {
-            main: {
-                options: {
-                    base: 'dest',
-                    port: 3000,
-                    hostname: '*',
-                    livereload: true,
-                }
-            }
-        },
-        
-        watch: {
-            src: {
-                tasks: ['clean', 'copy', 'concat'],
-                files: [
-                    'src/**/*.js',
-                    'src/**/*.css',
-                    'src/**/*.html',
-                    'src/**/*.pdf'
-                ],
-                options: {
-                    livereload: true
-                }
-            }
+    concat: {
+      main: {
+        files: {
+          'dest/main.js': ['src/js/*.js']
         }
-    
-    });
+      }
+    },
 
-    grunt.loadNpmTasks('grunt-contrib-connect');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-contrib-concat');
+    uglify: {
+      options: {
+        mangle: true,
+        banner: '/*! (c) <%= pkg.author %> - ' +
+        '<%= grunt.template.today("mm-dd-yyyy") %> */\n'
+      },
+      main: {
+        files: {
+          'dest/main.js': ['src/js/*.js']
+        }
+      }
+    },
 
-    grunt.registerTask('default', ['dev', 'connect', 'watch']);
-    grunt.registerTask('dev', ['clean', 'copy', 'concat']);
-    grunt.registerTask('build', ['clean', 'copy', 'uglify']);
+    connect: {
+      main: {
+        options: {
+          base: 'dest',
+          port: 3000,
+          hostname: '*',
+          livereload: true,
+        }
+      }
+    },
+
+    watch: {
+      src: {
+        tasks: ['clean', 'copy', 'concat'],
+        files: [
+          'src/**/*.js',
+          'src/**/*.css',
+          'src/**/*.html',
+          'src/**/*.pdf'
+        ],
+        options: {
+          livereload: true
+        }
+      }
+    }
+
+  });
+
+  grunt.loadNpmTasks('grunt-contrib-connect');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-ec2');
+
+  grunt.registerTask('default', ['dev', 'connect', 'watch']);
+  grunt.registerTask('dev', ['clean', 'copy', 'concat']);
+  grunt.registerTask('build', ['clean', 'copy', 'uglify']);
 
 };
