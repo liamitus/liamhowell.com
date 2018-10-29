@@ -94,5 +94,25 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['dev', 'connect', 'watch']);
   grunt.registerTask('dev', ['clean', 'copy', 'concat']);
   grunt.registerTask('build', ['clean', 'copy', 'uglify']);
+  grunt.registerTask('deploy' , name => {
+    grunt.task.run([
+      'build',
+      'ec2-launch:' + name,
+      'ec2-setup:' + name,
+      'ec2-deploy:' + name,
+      'ec2-elb-attach:' + name,
+    ])
+  });
+  grunt.registerTask('redeploy' , name => {
+    grunt.task.run([
+      'build',
+      'ec2-deploy:' + name,
+    ])
+  });
+  grunt.registerTask('undeploy' , name => {
+    grunt.task.run([
+      'ec2-shutdown:' + name,
+    ])
+  });
 
 };
