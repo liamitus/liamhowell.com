@@ -2,7 +2,7 @@
   "name": "liamhowell.com",
   "version": "1.0.0",
   "description": "My personal site.",
-  "main": "main.js",
+  "main": "app.js",
   "dependencies": {
     "finalhandler": "^1.1.1",
     "serve-static": "^1.13.2"
@@ -18,12 +18,10 @@
     "grunt-ec2": "liamitus/grunt-ec2"
   },
   "scripts": {
+    "build": "grunt build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/liamitus/liamhowell.git"
-  },
+  "repository": "https://github.com/liamitus/liamhowell.git",
   "author": "Liam Howell",
   "license": "ISC",
   "bugs": {
