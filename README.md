@@ -1,8 +1,5 @@
 # liamhowell.com
 My homepage
 
-## TODO
-
- - Random background with adjusted CSS rules.
- - Add inverse color copy of the page info to the bizarro element.
- - livereload without inserting anything into the HTML.
+## Update 2020
+It's been many moons since I've maintained this site. It's written in angular although I mostly use react-native nowadays. Feel free to look around!
