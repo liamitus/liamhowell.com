@@ -19,6 +19,7 @@
   },
   "scripts": {
     "build": "grunt build",
+    "deploy": "npm run build && cp -R dest/* ../liamitus.github.io && cd ../liamitus.github.io && git add . && git commit -a && git push",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "https://github.com/liamitus/liamhowell.git",
