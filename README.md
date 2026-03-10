@@ -1,5 +1,19 @@
 # liamhowell.com
-My homepage
 
-## Update 2020
-It's been many moons since I've maintained this site. It's written in angular although I mostly use react-native nowadays. Feel free to look around!
+My personal site. Static HTML/CSS/JS — no build step needed.
+
+## Development
+
+```
+npm run dev
+```
+
+Serves `src/` on http://localhost:3000.
+
+## Deploy
+
+```
+npm run deploy
+```
+
+Copies `src/` to the GitHub Pages repo and pushes.

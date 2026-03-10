@@ -1,32 +1,12 @@
 {
   "name": "liamhowell.com",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "My personal site.",
-  "main": "app.js",
-  "dependencies": {
-    "finalhandler": "^1.1.1",
-    "serve-static": "^1.13.2"
-  },
-  "devDependencies": {
-    "grunt": "^1.0.3",
-    "grunt-contrib-clean": "^0.6.0",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-connect": "^1.0.2",
-    "grunt-contrib-copy": "^0.8.0",
-    "grunt-contrib-uglify": "^3.3.0",
-    "grunt-contrib-watch": "^1.1.0",
-    "grunt-ec2": "liamitus/grunt-ec2"
-  },
-  "scripts": {
-    "build": "grunt build",
-    "deploy": "npm run build && cp -R dest/* ../liamitus.github.io && cd ../liamitus.github.io && git add . && git commit -a && git push",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": "https://github.com/liamitus/liamhowell.git",
   "author": "Liam Howell",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/liamitus/liamhowell/issues"
-  },
-  "homepage": "http://liamhowell.com"
+  "homepage": "https://liamhowell.com",
+  "scripts": {
+    "dev": "npx serve src -p 3000",
+    "deploy": "cp -R src/* ../liamitus.github.io && cd ../liamitus.github.io && git add . && git commit -a && git push"
+  }
 }

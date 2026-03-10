@@ -1,55 +1,95 @@
-/** 
+/**
+ * liamhowell.com
  * Liam Howell
- * 02-23-2015
  */
-var app = angular.module('lgh', ['prettyColors']);
 
-// Creates a new directive from a given name.
-// Accepts an optional file name for the template URL, otherwise will use
-// the name param for the file name.
-// Also accepts an optional transclude parameter.
-function directive(name, templateFileName, transclude) {
-	templateFileName = templateFileName || name;
-	app.directive(name, function () {
-		return {
-			restrict: 'E',
-			transclude: transclude,
-			templateUrl: templateFileName + '.html'
-		};
-	});
-}
+/* ========================================
+   Pretty Colors
+   Most colors from prettycolors.tumblr.com
+   ======================================== */
+(function () {
+    var colors = [
+        '#17334a', // Navy          — 10.5:1 on white
+        '#9c5038', // Terracotta    —  5.2:1 on white
+        '#4a7332', // Forest green  —  5.0:1 on white
+        '#3e5f82', // Slate blue    —  5.4:1 on white
+        '#575766', // Cool gray     —  5.1:1 on white
+        '#2b6585', // Deep teal     —  5.2:1 on white
+        '#7a4b6a', // Plum          —  5.5:1 on white
+        '#6b5d2e'  // Olive         —  5.1:1 on white
+    ];
 
-directive('liam', 'name');
-directive('bizarroLiam', 'bizarro-name');
-directive('mainContent', 'main-content', true);
-directive('photo');
-directive('about');
-directive('cv');
-directive('contact');
+    var currentColorSet = [];
 
-function getAge(dateString) {
-    var today = new Date();
-    var birthDate = new Date(dateString);
-    var age = today.getFullYear() - birthDate.getFullYear();
-    var m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
+    function generateRandomColorSet() {
+        currentColorSet = shuffle(colors.slice());
+        return currentColorSet;
     }
-    return age;
-}
 
-app.filter('age', function() {
-    return function (input) {
-        return getAge(input);
-    };
-});
+    // Fisher-Yates (aka Knuth) Shuffle
+    function shuffle(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+        while (0 !== currentIndex) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+        return array;
+    }
 
-console.log(' ___       ___  ________  _____ ______           ___  ___  ________  ___       __   _______   ___       ___          ');
-console.log('|\\  \\     |\\  \\|\\   __  \\|\\   _ \\  _   \\        |\\  \\|\\  \\|\\   __  \\|\\  \\     |\\  \\|\\  ___ \\ |\\  \\     |\\  \\         ');
-console.log('\\ \\  \\    \\ \\  \\ \\  \\|\\  \\ \\  \\\\\\__\\ \\  \\       \\ \\  \\\\\\  \\ \\  \\|\\  \\ \\  \\    \\ \\  \\ \\   __/|\\ \\  \\    \\ \\  \\        ');
-console.log(' \\ \\  \\    \\ \\  \\ \\   __  \\ \\  \\\\|__| \\  \\       \\ \\   __  \\ \\  \\\\\\  \\ \\  \\  __\\ \\  \\ \\  \\_|/_\\ \\  \\    \\ \\  \\       ');
-console.log('  \\ \\  \\____\\ \\  \\ \\  \\ \\  \\ \\  \\    \\ \\  \\       \\ \\  \\ \\  \\ \\  \\\\\\  \\ \\  \\|\\__\\_\\  \\ \\  \\_|\\ \\ \\  \\____\\ \\  \\____  ');
-console.log('   \\ \\_______\\ \\__\\ \\__\\ \\__\\ \\__\\    \\ \\__\\       \\ \\__\\ \\__\\ \\_______\\ \\____________\\ \\_______\\ \\_______\\ \\_______\\');
-console.log('    \\|_______|\\|__|\\|__|\\|__|\\|__|     \\|__|        \\|__|\\|__|\\|_______|\\|____________|\\|_______|\\|_______|\\|_______|');
-console.log('                                                                                                                     ');
-console.log('Hey friend! Enjoy picking apart my personal site thing: https://github.com/liamitus/liamhowell.com');
+    function pickColor() {
+        if (currentColorSet.length <= 0) {
+            generateRandomColorSet();
+        }
+        return currentColorSet.pop();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('header-accent');
+        if (!el) return;
+
+        function setAccent(color) {
+            el.style.background = color;
+            document.documentElement.style.setProperty('--accent', color);
+        }
+
+        // Start with a random color
+        setAccent(pickColor());
+
+        // Cycle on click with smooth CSS transition
+        el.addEventListener('click', function () {
+            var before = el.style.background;
+            var after = before;
+            while (before === after) {
+                after = pickColor();
+            }
+            setAccent(after);
+        });
+    });
+})();
+
+
+/* ========================================
+   Email obfuscation
+   ======================================== */
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        var el = document.getElementById('email-link');
+        if (!el) return;
+        var user = 'liam';
+        var domain = 'send.tax';
+        var addr = user + '@' + domain;
+        el.href = 'mailto:' + addr;
+        el.textContent = addr;
+    });
+})();
+
+
+/* ========================================
+   Console easter egg
+   ======================================== */
+console.log('%c Hey friend! ', 'background: #17334a; color: white; font-size: 14px; padding: 4px 8px; border-radius: 3px;');
+console.log('Building something cool at https://send.tax');
+console.log('Source: https://github.com/liamitus/liamhowell.com');
