@@ -42,7 +42,9 @@
         <main class="content">
             <div class="intro">
                 <div class="photo">
-                    <img src="images/liam.jpg" alt="Liam Howell" width="300">
+                    <button type="button" class="photo-trigger" id="photo-trigger" aria-label="View larger photo of Liam">
+                        <img src="images/liam.jpg" alt="Liam Howell" width="300">
+                    </button>
                 </div>
 
                 <div class="bio">
@@ -182,6 +184,11 @@
                 </ul>
             </section>
         </main>
+
+        <div class="photo-modal" id="photo-modal" hidden role="dialog" aria-modal="true" aria-label="Photo of Liam">
+            <button type="button" class="photo-modal-close" id="photo-modal-close" aria-label="Close">&times;</button>
+            <img src="images/liam.jpg" alt="Liam Howell" class="photo-modal-img">
+        </div>
 
         <script src="js/main.js"></script>
         <script src="js/sendtax-demo.js"></script>

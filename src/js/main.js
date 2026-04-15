@@ -108,6 +108,47 @@
 
 
 /* ========================================
+   Photo lightbox
+   ======================================== */
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
+        var trigger = document.getElementById('photo-trigger');
+        var modal = document.getElementById('photo-modal');
+        var closeBtn = document.getElementById('photo-modal-close');
+        if (!trigger || !modal || !closeBtn) return;
+
+        var lastFocused = null;
+
+        function open() {
+            lastFocused = document.activeElement;
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            closeBtn.focus();
+            document.addEventListener('keydown', onKey);
+        }
+
+        function close() {
+            modal.hidden = true;
+            document.body.style.overflow = '';
+            document.removeEventListener('keydown', onKey);
+            if (lastFocused && lastFocused.focus) lastFocused.focus();
+        }
+
+        function onKey(e) {
+            if (e.key === 'Escape') close();
+        }
+
+        trigger.addEventListener('click', open);
+        closeBtn.addEventListener('click', close);
+        modal.addEventListener('click', function (e) {
+            // Click on backdrop (not the image itself) closes.
+            if (e.target === modal || e.target.classList.contains('photo-modal-img')) close();
+        });
+    });
+})();
+
+
+/* ========================================
    Console easter egg
    ======================================== */
 console.log('%c Hey friend! ', 'background: #17334a; color: white; font-size: 14px; padding: 4px 8px; border-radius: 3px;');
