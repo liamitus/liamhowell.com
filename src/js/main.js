@@ -72,17 +72,37 @@
 
 
 /* ========================================
-   Email obfuscation
+   High-five interaction
    ======================================== */
 (function () {
     document.addEventListener('DOMContentLoaded', function () {
-        var el = document.getElementById('email-link');
-        if (!el) return;
-        var user = 'liam';
-        var domain = 'send.tax';
-        var addr = user + '@' + domain;
-        el.href = 'mailto:' + addr;
-        el.textContent = addr;
+        var btn = document.getElementById('wave-emoji');
+        if (!btn) return;
+
+        var glyph = btn.querySelector('.wave-glyph');
+        var clearTimer = null;
+
+        function slap() {
+            // Intentionally does NOT stop propagation — the click bubbles up
+            // to the header-accent handler so the color also cycles.
+            if (clearTimer) {
+                clearTimeout(clearTimer);
+                btn.classList.remove('is-high-five');
+                // Force reflow so the animation restarts on rapid clicks.
+                void btn.offsetWidth;
+            }
+            // Swap glyph to an open palm for the duration of the hit.
+            glyph.textContent = '\u270B'; // ✋
+            btn.classList.add('is-high-five');
+
+            clearTimer = setTimeout(function () {
+                btn.classList.remove('is-high-five');
+                glyph.textContent = '\uD83D\uDC4B'; // 👋
+                clearTimer = null;
+            }, 600);
+        }
+
+        btn.addEventListener('click', slap);
     });
 })();
 

@@ -33,40 +33,158 @@
         <header id="header-accent" class="header-accent noselect clickable">
             <div class="header-inner">
                 <h1 class="name">Liam Howell</h1>
-                <h2 class="title">Builder</h2>
+                <button type="button" class="title wave" id="wave-emoji" aria-label="High-five me">
+                    <span class="wave-glyph" aria-hidden="true">👋</span>
+                </button>
             </div>
         </header>
 
         <main class="content">
-            <div class="photo">
-                <img src="images/liam.jpg" alt="Liam Howell" width="300">
+            <div class="intro">
+                <div class="photo">
+                    <img src="images/liam.jpg" alt="Liam Howell" width="300">
+                </div>
+
+                <div class="bio">
+                    <section class="about">
+                        <h2>Hey there</h2>
+                        <p>
+                            I'm a software engineer turned founder, currently building
+                            <a href="https://send.tax">SendTax</a> &mdash; drop in your
+                            tax documents and it tells you exactly what you still need.
+                            Previously I spent years building software at places like
+                            <a href="https://guideline.com">Guideline</a>.
+                            Outside of work, I'm usually cooking or spending time with family.
+                        </p>
+                    </section>
+
+                    <section class="links">
+                        <h2>Find Me</h2>
+                        <ul>
+                            <li><a href="https://x.com/lg_howell">@lg_howell</a></li>
+                            <li><a href="https://github.com/liamitus">GitHub</a></li>
+                            <li><a href="https://www.linkedin.com/in/liamhowell/">LinkedIn</a></li>
+                        </ul>
+                    </section>
+                </div>
             </div>
 
-            <div class="bio">
-                <section class="about">
-                    <h2>Hey there</h2>
-                    <p>
-                        I'm a software engineer turned founder, currently building
-                        <a href="https://send.tax">SendTax</a> &mdash; drop in your
-                        tax documents and it tells you exactly what you still need.
-                        Previously I spent years building software at places like
-                        <a href="https://guideline.com">Guideline</a>.
-                        Outside of work, I'm usually cooking or spending time with family.
-                    </p>
-                </section>
+            <section class="projects">
+                <h2 class="section-heading">Building</h2>
+                <div class="project-grid">
+                    <a class="project-card project-card--anim" href="https://send.tax" aria-label="SendTax — tax document intake (opens in new tab)" target="_blank" rel="noopener">
+                        <div class="project-stage" id="sendtax-stage" aria-hidden="true">
+                            <div class="st-dropzone" data-st="dropzone">
+                                <div class="st-dz-label">Drop documents here</div>
+                            </div>
+                            <div class="st-doc" data-st="doc">
+                                <div class="st-doc-stripe"></div>
+                                <div class="st-doc-stripe"></div>
+                                <div class="st-doc-stripe"></div>
+                                <div class="st-scan" data-st="scan"></div>
+                            </div>
+                            <div class="st-badge" data-st="badge">
+                                <span class="st-badge-dot"></span>W-2 detected
+                            </div>
+                            <ul class="st-checklist" data-st="checklist">
+                                <li data-st-item><span class="st-check"></span><span class="st-label">W-2</span></li>
+                                <li data-st-item><span class="st-check"></span><span class="st-label">1099-INT</span></li>
+                                <li data-st-item><span class="st-check"></span><span class="st-label">1095-A</span></li>
+                            </ul>
+                        </div>
+                        <div class="project-foot">
+                            <span class="project-name">SendTax</span>
+                            <span class="project-tag">Tax docs in. Filing-ready out.</span>
+                        </div>
+                    </a>
 
-                <section class="links">
-                    <h2>Find Me</h2>
-                    <ul>
-                        <li><a href="https://x.com/sendtaxliam">@sendtaxliam</a></li>
-                        <li><a href="https://github.com/liamitus">GitHub</a></li>
-                        <li><a href="https://www.linkedin.com/in/liamhowell/">LinkedIn</a></li>
-                        <li><a id="email-link" href="#"></a></li>
-                    </ul>
-                </section>
-            </div>
+                    <a class="project-card project-card--anim" href="https://govroll.com" aria-label="GovRoll — civic transparency for legislation (opens in new tab)" target="_blank" rel="noopener">
+                        <div class="project-stage" id="govroll-stage" aria-hidden="true">
+                            <div class="gr-bill" data-gr="bill">
+                                <span class="gr-bill-id" data-gr="bill-id">H.R. 4242</span>
+                                <span class="gr-bill-title" data-gr="bill-title">Clean Energy Innovation Act</span>
+                            </div>
+                            <div class="gr-grid" data-gr="grid"></div>
+                            <div class="gr-tally">
+                                <span class="gr-yea"><span class="gr-dot gr-dot--yea"></span>Yea <b data-gr="yea">0</b></span>
+                                <span class="gr-nay"><span class="gr-dot gr-dot--nay"></span>Nay <b data-gr="nay">0</b></span>
+                            </div>
+                            <div class="gr-result" data-gr="result"></div>
+                        </div>
+                        <div class="project-foot">
+                            <span class="project-name">GovRoll</span>
+                            <span class="project-tag">See how your reps actually voted.</span>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="prior-work">
+                <h2 class="section-heading">Previously</h2>
+                <ul class="prior-list">
+                    <li class="prior-item">
+                        <div class="prior-line">
+                            <span class="prior-company">Guideline</span>
+                            <span class="prior-role">Software Engineer</span>
+                            <span class="prior-years">2023 &ndash; 2024</span>
+                        </div>
+                        <p class="prior-blurb">
+                            Backend systems for money movement and 401(k)-backed loans on a
+                            financial platform serving thousands of small businesses.
+                        </p>
+                    </li>
+                    <li class="prior-item">
+                        <div class="prior-line">
+                            <span class="prior-company">Symbiont.io</span>
+                            <span class="prior-role">Software Engineer</span>
+                            <span class="prior-years">2017 &ndash; 2022</span>
+                        </div>
+                        <p class="prior-blurb">
+                            Smart contracts on a private distributed ledger for private equity,
+                            mortgage servicing, and forex. Added migration capability to the BFT
+                            consensus layer; published CircleCI orbs used across the org.
+                        </p>
+                    </li>
+                    <li class="prior-item">
+                        <div class="prior-line">
+                            <span class="prior-company">SeedInvest</span>
+                            <span class="prior-role">Software Engineer</span>
+                            <span class="prior-years">2016 &ndash; 2017</span>
+                        </div>
+                        <p class="prior-blurb">
+                            Led the rebuild of the application flow founders use to raise capital
+                            on the platform.
+                        </p>
+                    </li>
+                    <li class="prior-item">
+                        <div class="prior-line">
+                            <span class="prior-company">Mobiquity</span>
+                            <span class="prior-role">Web Developer</span>
+                            <span class="prior-years">2014 &ndash; 2016</span>
+                        </div>
+                        <p class="prior-blurb">
+                            Built a hands-free, voice-controlled recipe site backed by Alexa, plus
+                            web work for Fortune 500 clients including CVS and Pfizer.
+                        </p>
+                    </li>
+                    <li class="prior-item">
+                        <div class="prior-line">
+                            <span class="prior-company">Ferapod</span>
+                            <span class="prior-role">Founder &amp; Engineer</span>
+                            <span class="prior-years">2009 &ndash; 2014</span>
+                        </div>
+                        <p class="prior-blurb">
+                            First company. Wrote proprietary encryption protocols on top of AES
+                            and Diffie&ndash;Hellman, and ran the whole stack &mdash; product,
+                            infrastructure, and contractors.
+                        </p>
+                    </li>
+                </ul>
+            </section>
         </main>
 
         <script src="js/main.js"></script>
+        <script src="js/sendtax-demo.js"></script>
+        <script src="js/govroll-demo.js"></script>
     </body>
 </html>
