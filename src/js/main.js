@@ -85,10 +85,14 @@
         var FALLBACK_MS = 700;
         var fallbackTimer = null;
 
+        // Note: we deliberately do NOT swap to ✋ for the high-five. The two
+        // emoji glyphs (👋 and ✋) are drawn at different intrinsic angles
+        // (~45° vs 0°), so swapping mid-animation reads as the hand jumping
+        // to a new orientation. Keeping 👋 throughout — the slap motion,
+        // scale pulse, ripple, and sparks carry the gesture.
         function reset() {
             if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
             btn.classList.remove('is-high-five');
-            glyph.textContent = '\uD83D\uDC4B'; // 👋
         }
 
         function slap() {
@@ -100,9 +104,7 @@
             reset();
             void glyph.offsetWidth;
 
-            glyph.textContent = '\u270B'; // ✋
             btn.classList.add('is-high-five');
-
             fallbackTimer = setTimeout(reset, FALLBACK_MS);
         }
 
