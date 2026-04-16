@@ -1,5 +1,5 @@
 /**
- * GovRoll demo loop
+ * Govroll demo loop
  * Bill slides in -> 50 rep dots cascade-flip green/red -> tally settles.
  */
 (function () {
