@@ -153,15 +153,24 @@ a:hover {
         -24px -14px 0 0 #8ee3c8;
 }
 
-/* The glyph's own rotation during the high-five is driven by the Web
-   Animations API in JS, so we can start from any wave angle without a
-   snap. These class-based rules only animate the ripple + sparks. */
+.wave.is-high-five .wave-glyph {
+    animation: wave-high-five 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .wave.is-high-five::after {
     animation: wave-ripple 0.55s ease-out;
 }
 
 .wave.is-high-five::before {
     animation: wave-spark 0.6s ease-out;
+}
+
+@keyframes wave-high-five {
+    0%   { transform: rotate(0deg)    scale(1);    }
+    18%  { transform: rotate(-22deg)  scale(1.08); }
+    38%  { transform: rotate(16deg)   scale(1.4);  }
+    60%  { transform: rotate(-4deg)   scale(0.95); }
+    100% { transform: rotate(0deg)    scale(1);    }
 }
 
 @keyframes wave-ripple {
