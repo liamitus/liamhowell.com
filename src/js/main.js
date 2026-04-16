@@ -80,61 +80,66 @@
         if (!btn) return;
 
         var glyph = btn.querySelector('.wave-glyph');
-        var startTimer = null;
-        var endTimer = null;
+        var swapTimer = null;
+        var currentAnim = null;
 
-        // Durations must match the CSS keyframes/transitions below.
-        var SETTLE_MS = 120; // quick rotate-from-current-angle back to 0
-        var HIGH_FIVE_MS = 600; // wave-high-five keyframe duration
-
-        function cancelTimers() {
-            if (startTimer) { clearTimeout(startTimer); startTimer = null; }
-            if (endTimer) { clearTimeout(endTimer); endTimer = null; }
-        }
+        // Total length of the slap sequence in ms. Breakdown:
+        //   0 – 120ms : settle — rotate from current wave angle to 0deg
+        //   120 – 720 : the actual high-five (keyframe swing + recovery)
+        var SETTLE_MS = 120;
+        var SLAP_MS = 720;
 
         function slap() {
             // Intentionally does NOT stop propagation — the click bubbles up
             // to the header-accent handler so the color also cycles.
-            cancelTimers();
+            if (swapTimer) { clearTimeout(swapTimer); swapTimer = null; }
+            if (currentAnim) { try { currentAnim.cancel(); } catch (e) {} currentAnim = null; }
             btn.classList.remove('is-high-five');
+            glyph.textContent = '\uD83D\uDC4B'; // 👋
 
-            // 1) Capture the glyph's current visual rotation (mid-wave could
-            //    be at any angle) and pin it as an inline style so killing
-            //    the wave-hand animation doesn't snap to 0.
-            var currentTransform = getComputedStyle(glyph).transform;
+            // Capture the glyph's live rotation so the sequence starts from
+            // wherever the wave animation currently is — no snap to 0.
+            var startTransform = getComputedStyle(glyph).transform;
+            if (startTransform === 'none') startTransform = 'rotate(0deg)';
+
+            // Kill the CSS wave-hand for the duration of the slap. We will
+            // restart it fresh when the slap finishes so it doesn't resume
+            // mid-rotation.
             glyph.style.animation = 'none';
-            glyph.style.transition = 'none';
-            glyph.style.transform = currentTransform === 'none' ? 'rotate(0deg)' : currentTransform;
-            // Force reflow so the above takes effect before we transition.
-            void glyph.offsetWidth;
 
-            // 2) Smoothly rotate to 0deg over SETTLE_MS.
-            glyph.style.transition = 'transform ' + SETTLE_MS + 'ms ease-out';
-            glyph.style.transform = 'rotate(0deg)';
+            // One continuous WAAPI animation: settle → windup → swing →
+            // recovery → rest. Using WAAPI (rather than a CSS class) so we
+            // can start from an arbitrary rotation instead of snapping.
+            var settleEnd = SETTLE_MS / SLAP_MS; // ~0.17
+            currentAnim = glyph.animate([
+                { transform: startTransform,                          offset: 0 },
+                { transform: 'rotate(0deg) scale(1)',                 offset: settleEnd,         easing: 'ease-out' },
+                { transform: 'rotate(-22deg) scale(1.08)',            offset: settleEnd + 0.18 },
+                { transform: 'rotate(16deg) scale(1.4)',              offset: settleEnd + 0.40 },
+                { transform: 'rotate(-4deg) scale(0.95)',             offset: settleEnd + 0.62 },
+                { transform: 'rotate(0deg) scale(1)',                 offset: 1 }
+            ], {
+                duration: SLAP_MS,
+                easing: 'ease-in-out',
+                fill: 'none'
+            });
 
-            // 3) Once at rest, swap to open palm and fire the high-five keyframe.
-            startTimer = setTimeout(function () {
-                glyph.style.transition = '';
-                glyph.style.transform = '';
+            // Once the settle phase is done, swap to open palm and let the
+            // ripple/spark pseudo-element animations fire for the hit.
+            swapTimer = setTimeout(function () {
                 glyph.textContent = '\u270B'; // ✋
-                // Reflow between clearing inline transform and adding the class
-                // so the keyframe starts from rotate(0) cleanly.
-                void glyph.offsetWidth;
                 btn.classList.add('is-high-five');
-                startTimer = null;
+                swapTimer = null;
             }, SETTLE_MS);
 
-            // 4) After the hit, remove the class and restart the wave-hand
-            //    animation fresh (so it resumes at its rest pose instead of
-            //    jumping into whatever phase it would be at).
-            endTimer = setTimeout(function () {
+            currentAnim.onfinish = function () {
                 btn.classList.remove('is-high-five');
                 glyph.textContent = '\uD83D\uDC4B'; // 👋
-                glyph.style.animation = 'none';
-                void glyph.offsetWidth;
+                try { currentAnim.cancel(); } catch (e) {}
+                currentAnim = null;
+                // Restart CSS wave-hand from the top (with its 0.6s delay).
                 glyph.style.animation = '';
-                endTimer = null;
-            }, SETTLE_MS + HIGH_FIVE_MS);
+            };
         }
 
         btn.addEventListener('click', slap);
