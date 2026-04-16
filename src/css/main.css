@@ -95,12 +95,26 @@ a:hover {
     border-radius: 6px;
 }
 
+/* Two nested spans so the wave (outer) and the high-five (inner) live on
+   different elements. Their transforms compose multiplicatively via the
+   DOM tree, so when the high-five starts and ends at the identity
+   transform, the visible rotation at those moments is exactly whatever
+   the wave is doing — no snap at either boundary. Both need identical
+   box geometry so transform-origin: 50% 90% lands on the same physical
+   pixel. */
+.wave-glyph-wrap {
+    display: inline-block;
+    line-height: 1;
+    transform-origin: 50% 90%;
+    animation: wave-hand 6s ease-in-out 0.6s infinite;
+    will-change: transform;
+}
+
 .wave-glyph {
     display: inline-block;
     font-size: 2.8em;
     line-height: 1;
     transform-origin: 50% 90%;
-    animation: wave-hand 6s ease-in-out 0.6s infinite;
     font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
     will-change: transform;
 }
@@ -185,6 +199,7 @@ a:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .wave-glyph-wrap,
     .wave-glyph { animation: none; }
     .wave.is-high-five .wave-glyph,
     .wave.is-high-five::after,

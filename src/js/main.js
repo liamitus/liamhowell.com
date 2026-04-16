@@ -80,62 +80,38 @@
         if (!btn) return;
 
         var glyph = btn.querySelector('.wave-glyph');
-        var startTimer = null;
-        var endTimer = null;
+        // Fallback duration in case animationend doesn't fire (e.g. reduced
+        // motion). Should be slightly longer than the wave-high-five keyframe.
+        var FALLBACK_MS = 700;
+        var fallbackTimer = null;
 
-        // Durations must match the CSS keyframes/transitions below.
-        var SETTLE_MS = 120; // quick rotate-from-current-angle back to 0
-        var HIGH_FIVE_MS = 600; // wave-high-five keyframe duration
-
-        function cancelTimers() {
-            if (startTimer) { clearTimeout(startTimer); startTimer = null; }
-            if (endTimer) { clearTimeout(endTimer); endTimer = null; }
+        function reset() {
+            if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+            btn.classList.remove('is-high-five');
+            glyph.textContent = '\uD83D\uDC4B'; // 👋
         }
 
         function slap() {
             // Intentionally does NOT stop propagation — the click bubbles up
             // to the header-accent handler so the color also cycles.
-            cancelTimers();
-            btn.classList.remove('is-high-five');
 
-            // 1) Capture the glyph's current visual rotation (mid-wave could
-            //    be at any angle) and pin it as an inline style so killing
-            //    the wave-hand animation doesn't snap to 0.
-            var currentTransform = getComputedStyle(glyph).transform;
-            glyph.style.animation = 'none';
-            glyph.style.transition = 'none';
-            glyph.style.transform = currentTransform === 'none' ? 'rotate(0deg)' : currentTransform;
-            // Force reflow so the above takes effect before we transition.
+            // Restart cleanly if a previous slap is still in flight: pop the
+            // class, force a reflow so the animation can re-trigger.
+            reset();
             void glyph.offsetWidth;
 
-            // 2) Smoothly rotate to 0deg over SETTLE_MS.
-            glyph.style.transition = 'transform ' + SETTLE_MS + 'ms ease-out';
-            glyph.style.transform = 'rotate(0deg)';
+            glyph.textContent = '\u270B'; // ✋
+            btn.classList.add('is-high-five');
 
-            // 3) Once at rest, swap to open palm and fire the high-five keyframe.
-            startTimer = setTimeout(function () {
-                glyph.style.transition = '';
-                glyph.style.transform = '';
-                glyph.textContent = '\u270B'; // ✋
-                // Reflow between clearing inline transform and adding the class
-                // so the keyframe starts from rotate(0) cleanly.
-                void glyph.offsetWidth;
-                btn.classList.add('is-high-five');
-                startTimer = null;
-            }, SETTLE_MS);
-
-            // 4) After the hit, remove the class and restart the wave-hand
-            //    animation fresh (so it resumes at its rest pose instead of
-            //    jumping into whatever phase it would be at).
-            endTimer = setTimeout(function () {
-                btn.classList.remove('is-high-five');
-                glyph.textContent = '\uD83D\uDC4B'; // 👋
-                glyph.style.animation = 'none';
-                void glyph.offsetWidth;
-                glyph.style.animation = '';
-                endTimer = null;
-            }, SETTLE_MS + HIGH_FIVE_MS);
+            fallbackTimer = setTimeout(reset, FALLBACK_MS);
         }
+
+        // Listen on the inner glyph so we only react to wave-high-five
+        // (the wave-hand on the wrapper would never fire animationend
+        // because it's infinite, but be specific anyway).
+        glyph.addEventListener('animationend', function (e) {
+            if (e.animationName === 'wave-high-five') reset();
+        });
 
         btn.addEventListener('click', slap);
     });
