@@ -500,10 +500,13 @@ a:hover {
     border: 1px solid #d4d8ea;
     border-radius: 4px;
     box-shadow: 0 6px 18px rgba(20, 30, 70, 0.08);
-    padding: 14% 12% 0;
+    /* padding % resolves against the STAGE's width (the containing block),
+       not the doc's own width, so these have to stay small — otherwise the
+       sides eat nearly the whole doc and the stripes collapse to squares. */
+    padding: 10% 3% 0;
     display: flex;
     flex-direction: column;
-    gap: 10%;
+    gap: 5%;
     opacity: 0;
     transition: top 0.9s cubic-bezier(0.4, 0.05, 0.2, 1),
                 transform 0.9s cubic-bezier(0.4, 0.05, 0.2, 1),
@@ -511,7 +514,7 @@ a:hover {
 }
 
 .st-doc-stripe {
-    height: 8%;
+    height: 4%;
     background: #e3e7f3;
     border-radius: 2px;
 }
