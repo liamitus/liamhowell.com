@@ -82,7 +82,7 @@ a:hover {
     padding: 4px 10px;
     background: transparent;
     border: 0;
-    cursor: pointer;
+    cursor: grab;
     color: inherit;
     font: inherit;
     line-height: 1;
