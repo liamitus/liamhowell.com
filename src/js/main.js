@@ -96,9 +96,6 @@
         }
 
         function slap() {
-            // Intentionally does NOT stop propagation — the click bubbles up
-            // to the header-accent handler so the color also cycles.
-
             // Restart cleanly if a previous slap is still in flight: pop the
             // class, force a reflow so the animation can re-trigger.
             reset();
@@ -115,7 +112,16 @@
             if (e.animationName === 'wave-high-five') reset();
         });
 
-        btn.addEventListener('click', slap);
+        // Fire on press (pointerdown) so the slap feels coupled to the touch,
+        // not the release. The click still bubbles to the header for the
+        // color cycle.
+        btn.addEventListener('pointerdown', function (e) {
+            if (e.button !== 0) return;
+            slap();
+        });
+        btn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') slap();
+        });
     });
 })();
 
