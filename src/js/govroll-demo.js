@@ -1,6 +1,7 @@
 /**
  * Govroll demo loop
  * Bill slides in -> 50 rep dots cascade-flip green/red -> tally settles.
+ * Animates only while the card is hovered or focused.
  */
 (function () {
     var BILLS = [
@@ -19,6 +20,7 @@
         var stage = document.getElementById('govroll-stage');
         if (!stage) return;
 
+        var card = stage.closest('.project-card') || stage;
         var billId = stage.querySelector('[data-gr="bill-id"]');
         var billTitle = stage.querySelector('[data-gr="bill-title"]');
         var grid = stage.querySelector('[data-gr="grid"]');
@@ -34,32 +36,8 @@
         }
         var cells = grid.querySelectorAll('.gr-cell');
 
-        var visible = true;
-        var inView = true;
-        document.addEventListener('visibilitychange', function () {
-            visible = !document.hidden;
-        });
-        if ('IntersectionObserver' in window) {
-            var io = new IntersectionObserver(function (entries) {
-                inView = entries[0] && entries[0].isIntersecting;
-            }, { threshold: 0.15 });
-            io.observe(stage);
-        }
-
         function delay(ms) {
             return new Promise(function (r) { setTimeout(r, ms); });
-        }
-
-        function waitForReady() {
-            if (visible && inView) return Promise.resolve();
-            return new Promise(function (resolve) {
-                var t = setInterval(function () {
-                    if (visible && inView) {
-                        clearInterval(t);
-                        resolve();
-                    }
-                }, 250);
-            });
         }
 
         function reset() {
@@ -96,10 +74,13 @@
             return order;
         }
 
-        async function loop() {
-            var billIdx = 0;
-            while (true) {
-                await waitForReady();
+        // Token bumped on every start/stop. Live loops check it after each
+        // await and bail if it changed — that's how we cancel mid-animation.
+        var token = 0;
+        var billIdx = 0;
+
+        async function loop(myToken) {
+            while (myToken === token) {
                 reset();
 
                 var bill = BILLS[billIdx % BILLS.length];
@@ -107,11 +88,10 @@
                 billId.textContent = bill.id;
                 billTitle.textContent = bill.title;
 
-                // Bill slides in
                 stage.classList.add('gr-state-bill');
                 await delay(900);
+                if (myToken !== token) return;
 
-                // Start voting
                 stage.classList.add('gr-state-voting');
                 var order = buildVoteOrder(bill.yeaRate);
                 var yea = 0, nay = 0;
@@ -128,9 +108,9 @@
                         nayEl.textContent = String(nay);
                     }
                     await delay(40);
+                    if (myToken !== token) return;
                 }
 
-                // Result stamp
                 var passed = yea > nay;
                 resultEl.textContent = passed ? 'PASSED' : 'FAILED';
                 stage.classList.add(passed ? 'gr-state-passed' : 'gr-state-failed', 'gr-state-done');
@@ -138,7 +118,20 @@
             }
         }
 
-        loop();
+        function start() {
+            var myToken = ++token;
+            loop(myToken);
+        }
+
+        function stop() {
+            token++;
+            reset();
+        }
+
+        card.addEventListener('pointerenter', start);
+        card.addEventListener('pointerleave', stop);
+        card.addEventListener('focusin', start);
+        card.addEventListener('focusout', stop);
     }
 
     if (document.readyState === 'loading') {

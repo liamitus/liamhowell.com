@@ -1,35 +1,19 @@
 /**
  * SendTax demo loop
  * Drop a doc -> scan -> classify -> checklist fills.
+ * Animates only while the card is hovered or focused.
  */
 (function () {
     function setup() {
         var stage = document.getElementById('sendtax-stage');
         if (!stage) return;
 
-        var doc = stage.querySelector('[data-st="doc"]');
-        var dz = stage.querySelector('[data-st="dropzone"]');
-        var scan = stage.querySelector('[data-st="scan"]');
-        var badge = stage.querySelector('[data-st="badge"]');
+        var card = stage.closest('.project-card') || stage;
         var items = stage.querySelectorAll('[data-st-item]');
 
         function reset() {
             stage.classList.remove('st-state-drop', 'st-state-scan', 'st-state-classified', 'st-state-listing', 'st-state-done');
             items.forEach(function (li) { li.classList.remove('is-checked'); });
-        }
-
-        // Pause when offscreen / tab hidden.
-        var visible = true;
-        var inView = true;
-        document.addEventListener('visibilitychange', function () {
-            visible = !document.hidden;
-        });
-
-        if ('IntersectionObserver' in window) {
-            var io = new IntersectionObserver(function (entries) {
-                inView = entries[0] && entries[0].isIntersecting;
-            }, { threshold: 0.15 });
-            io.observe(stage);
         }
 
         function step(state, ms) {
@@ -39,38 +23,49 @@
             });
         }
 
-        function waitForReady() {
-            if (visible && inView) return Promise.resolve();
-            return new Promise(function (resolve) {
-                var t = setInterval(function () {
-                    if (visible && inView) {
-                        clearInterval(t);
-                        resolve();
-                    }
-                }, 250);
-            });
-        }
+        // Token bumped on every start/stop. Live loops check it after each
+        // await and bail if it changed — that's how we cancel mid-animation.
+        var token = 0;
 
-        async function loop() {
-            while (true) {
-                await waitForReady();
+        async function loop(myToken) {
+            while (myToken === token) {
                 reset();
-                await step(null, 700);                  // settle
-                await step('st-state-drop', 1100);      // doc travels into dropzone
-                await step('st-state-scan', 1400);      // scan line sweeps
-                await step('st-state-classified', 1100); // badge pops
+                await step(null, 700);
+                if (myToken !== token) return;
+                await step('st-state-drop', 1100);
+                if (myToken !== token) return;
+                await step('st-state-scan', 1400);
+                if (myToken !== token) return;
+                await step('st-state-classified', 1100);
+                if (myToken !== token) return;
                 stage.classList.add('st-state-listing');
                 await step(null, 250);
+                if (myToken !== token) return;
                 items[0].classList.add('is-checked');
                 await step(null, 500);
+                if (myToken !== token) return;
                 items[1].classList.add('is-checked');
                 await step(null, 500);
+                if (myToken !== token) return;
                 items[2].classList.add('is-checked');
                 await step('st-state-done', 1800);
             }
         }
 
-        loop();
+        function start() {
+            var myToken = ++token;
+            loop(myToken);
+        }
+
+        function stop() {
+            token++;
+            reset();
+        }
+
+        card.addEventListener('pointerenter', start);
+        card.addEventListener('pointerleave', stop);
+        card.addEventListener('focusin', start);
+        card.addEventListener('focusout', stop);
     }
 
     if (document.readyState === 'loading') {
