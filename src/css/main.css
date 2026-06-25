@@ -986,7 +986,9 @@ body.arcade-open {
 
 /* ----- The peeled-back corner (top-right dog-ear) ----- */
 .page-peel {
-    position: fixed;
+    /* Anchored to the top of the page (scrolls away with content), not pinned
+       to the window. Body is static, so this resolves to the document. */
+    position: absolute;
     right: 0;
     top: 0;
     width: 92px;
