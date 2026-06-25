@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>MOSTLY — guess what everyone else said</title>
+<meta name="description" content="Guess what percent of people did it — then see how wrong we all are about each other. A daily game. New round every day." />
+<meta name="robots" content="noindex" />
+<meta name="theme-color" content="#F4EFE6" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta property="og:title" content="MOSTLY — guess what everyone else said" />
+<meta property="og:description" content="You think you know people. Prove it. A daily game about how badly we misjudge each other." />
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32" />
+<link rel="apple-touch-icon" href="/images/apple-touch-icon-180x180.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Hanken+Grotesk:wght@400;500;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#F4EFE6;
+    --paper-2:#EBE3D4;
+    --ink:#1A1712;
+    --muted:#6E6757;
+    --hair:#1A1712;
+    --you:#137A7F;       /* deep teal  */
+    --truth:#E04E1B;     /* vermilion  */
+    --crowd:#9A8F7B;     /* taupe      */
+    --gold:#E0A21B;
+    --shadow: 6px 6px 0 var(--ink);
+    --serif:"Fraunces", Georgia, serif;
+    --sans:"Hanken Grotesk", system-ui, sans-serif;
+    --mono:"DM Mono", ui-monospace, monospace;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; height:100%; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.45;
+    /* subtle paper grain */
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+    overscroll-behavior:none;
+  }
+  .app{
+    max-width:480px; margin:0 auto; min-height:100%;
+    display:flex; flex-direction:column;
+    padding:max(14px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  }
+
+  /* ---------- masthead ---------- */
+  header{ border-bottom:3px double var(--ink); padding-bottom:8px; }
+  .masthead{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .wordmark{
+    font-family:var(--serif); font-weight:900; font-size:clamp(34px,12vw,52px);
+    letter-spacing:-.04em; line-height:.9; margin:0;
+    font-variation-settings:"opsz" 144, "SOFT" 0, "WONK" 1;
+  }
+  .wordmark .dot{ color:var(--truth); }
+  .ticker{ font-family:var(--mono); font-size:11px; color:var(--muted); text-align:right; letter-spacing:-.02em; }
+  .ticker b{ color:var(--ink); }
+  .kicker{ font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+
+  main{ flex:1; display:flex; flex-direction:column; }
+
+  /* ---------- screens ---------- */
+  .screen{ display:none; flex:1; flex-direction:column; }
+  .screen.active{ display:flex; animation:fadein .35s ease both; }
+  @keyframes fadein{ from{ opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  /* ---------- intro ---------- */
+  #intro{ justify-content:center; gap:22px; padding:8px 0 24px; }
+  .lede{ font-family:var(--serif); font-weight:400; font-size:clamp(25px,7.4vw,34px); line-height:1.16; letter-spacing:-.015em; }
+  .lede em{ font-style:italic; color:var(--truth); }
+  .sub{ color:var(--muted); font-size:15px; max-width:34ch; }
+  .rules{ list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+  .rules li{ display:flex; gap:12px; align-items:flex-start; font-size:14.5px; }
+  .rules .num{ font-family:var(--mono); font-size:12px; background:var(--ink); color:var(--paper); width:22px; height:22px; flex:none; display:grid; place-items:center; border-radius:50%; margin-top:1px; }
+
+  .btn{
+    font-family:var(--sans); font-weight:800; font-size:16px; letter-spacing:.01em;
+    background:var(--ink); color:var(--paper); border:2px solid var(--ink);
+    padding:15px 18px; border-radius:2px; cursor:pointer; width:100%;
+    box-shadow:var(--shadow); transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:active{ transform:translate(6px,6px); box-shadow:0 0 0 var(--ink); }
+  .btn.ghost{ background:var(--paper); color:var(--ink); }
+  .btn.accent{ background:var(--truth); border-color:var(--ink); color:#fff; }
+  .btn[disabled]{ opacity:.4; cursor:not-allowed; box-shadow:none; transform:none; }
+  .btn-row{ display:flex; gap:10px; }
+  .btn-row .btn{ width:auto; flex:1; }
+
+  /* ---------- game ---------- */
+  #game{ padding-top:14px; }
+  .progress{ display:flex; gap:6px; margin-bottom:18px; }
+  .pip{ flex:1; height:5px; background:var(--paper-2); border:1px solid var(--ink); border-radius:2px; overflow:hidden; }
+  .pip.done{ background:var(--ink); }
+  .pip.cur{ background:var(--you); }
+
+  .qcount{ font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .question{ font-family:var(--serif); font-weight:600; font-size:clamp(24px,6.6vw,32px); line-height:1.14; letter-spacing:-.018em; margin:0 0 4px; }
+  .question .grp{ color:var(--truth); font-style:italic; font-weight:500; }
+  .qhint{ color:var(--muted); font-size:13.5px; margin-bottom:8px; }
+
+  /* hero readout */
+  .readout{ text-align:center; margin:14px 0 2px; }
+  .readout .pct{
+    font-family:var(--serif); font-weight:900; font-size:clamp(64px,22vw,104px);
+    line-height:.86; letter-spacing:-.05em; font-variation-settings:"opsz" 144,"WONK" 1;
+  }
+  .readout .pct .sign{ font-size:.42em; vertical-align:.42em; color:var(--muted); font-weight:600; margin-left:2px; }
+  .readout .lab{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--you); }
+
+  /* spectrum */
+  .spectrum{ position:relative; margin:30px 4px 8px; touch-action:none; }
+  .track{ position:relative; height:18px; background:var(--paper-2); border:2px solid var(--ink); border-radius:999px; }
+  .fill{ position:absolute; inset:0 auto 0 0; width:0%; background:var(--you); border-radius:999px 0 0 999px; }
+  .truthfill{ position:absolute; top:0; bottom:0; left:0; width:0%; background:repeating-linear-gradient(45deg,rgba(224,78,27,.30),rgba(224,78,27,.30) 6px,rgba(224,78,27,.14) 6px,rgba(224,78,27,.14) 12px); border-radius:999px 0 0 999px; opacity:0; transition:width .9s cubic-bezier(.2,.8,.2,1), opacity .3s; }
+  .thumb{
+    position:absolute; top:50%; left:0%; width:40px; height:40px; transform:translate(-50%,-50%);
+    background:var(--paper); border:3px solid var(--you); border-radius:50%; cursor:grab;
+    box-shadow:3px 3px 0 var(--ink); display:grid; place-items:center; touch-action:none;
+  }
+  .thumb:active{ cursor:grabbing; }
+  .thumb::after{ content:""; width:8px; height:8px; border-radius:50%; background:var(--you); }
+  .thumb:focus-visible{ outline:3px solid var(--gold); outline-offset:3px; }
+  .scale{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:8px; padding:0 2px; }
+  .scale span:nth-child(2){ opacity:.6; }
+
+  /* reveal markers */
+  .marker{ position:absolute; top:50%; width:2px; height:40px; transform:translate(-50%,-50%); opacity:0; transition:opacity .3s, left .9s cubic-bezier(.2,.8,.2,1); pointer-events:none; }
+  .marker .pin{ position:absolute; left:50%; transform:translateX(-50%); top:-26px; font-family:var(--mono); font-size:10px; letter-spacing:.04em; white-space:nowrap; padding:2px 5px; border:1.5px solid var(--ink); background:var(--paper); border-radius:2px; }
+  .marker .pin.below{ top:auto; bottom:-26px; }
+  .marker.crowd{ background:var(--crowd); }
+  .marker.crowd .pin{ color:var(--crowd); }
+  .marker.truth{ background:var(--truth); height:54px; width:3px; }
+  .marker.truth .pin{ color:#fff; background:var(--truth); border-color:var(--truth); font-weight:500; }
+  .marker.show{ opacity:1; }
+
+  /* tale of the tape */
+  .tape{ margin-top:30px; display:grid; gap:0; border:2px solid var(--ink); border-radius:3px; overflow:hidden; opacity:0; }
+  .tape.show{ opacity:1; }
+  .taperow{ display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:10px; padding:11px 13px; border-bottom:1.5px solid var(--ink); opacity:0; transform:translateX(-8px); }
+  .taperow:last-child{ border-bottom:0; }
+  .taperow.in{ animation:slidein .4s ease both; }
+  @keyframes slidein{ to{ opacity:1; transform:none; } }
+  .taperow .who{ display:flex; align-items:center; gap:9px; font-weight:700; font-size:14px; }
+  .taperow .who i{ width:11px; height:11px; border-radius:50%; display:inline-block; }
+  .taperow.you{ background:rgba(19,122,127,.07); } .taperow.you i{ background:var(--you); }
+  .taperow.crowd i{ background:var(--crowd); }
+  .taperow.truth{ background:var(--truth); color:#fff; } .taperow.truth i{ background:#fff; }
+  .taperow .val{ font-family:var(--mono); font-size:18px; font-weight:500; }
+  .taperow .off{ font-family:var(--mono); font-size:11px; color:var(--muted); min-width:62px; text-align:right; }
+  .taperow.truth .off{ color:rgba(255,255,255,.8); }
+  .grade{ font-size:18px; }
+
+  .twist{ margin-top:16px; font-family:var(--serif); font-style:italic; font-size:17px; line-height:1.34; opacity:0; transition:opacity .5s; }
+  .twist.show{ opacity:1; }
+  .twist::before{ content:"“"; color:var(--truth); font-weight:900; }
+  .twist::after{ content:"”"; color:var(--truth); font-weight:900; }
+
+  .actionbar{ margin-top:auto; padding-top:20px; }
+
+  /* ---------- results ---------- */
+  #results{ padding-top:10px; }
+  .result-head{ display:flex; justify-content:space-between; align-items:baseline; font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin:4px 2px 12px; }
+  .result-head .rh-no{ color:var(--ink); }
+  .share-stage{ width:74%; max-width:300px; margin:0 auto; min-height:420px; display:grid; place-items:center; }
+  .share-stage canvas{ width:100%; height:auto; display:block; border:2px solid var(--ink); border-radius:7px; box-shadow:var(--shadow); animation:cardpop .45s cubic-bezier(.2,.9,.3,1.2) both; }
+  @keyframes cardpop{ from{ opacity:0; transform:scale(.94) translateY(8px);} to{opacity:1; transform:none;} }
+  .rendering{ font-family:var(--mono); font-size:12px; color:var(--muted); }
+  .verdict-card{ border:2.5px solid var(--ink); border-radius:4px; background:var(--paper); box-shadow:var(--shadow); padding:20px 18px; }
+  .vc-top{ display:flex; justify-content:space-between; align-items:baseline; border-bottom:1.5px solid var(--ink); padding-bottom:8px; }
+  .vc-top .no{ font-family:var(--mono); font-size:12px; letter-spacing:.1em; }
+  .vc-top .date{ font-family:var(--mono); font-size:11px; color:var(--muted); }
+  .verdict-title{ font-family:var(--serif); font-weight:900; font-size:clamp(30px,9vw,42px); line-height:1; letter-spacing:-.03em; margin:16px 0 8px; font-variation-settings:"opsz" 144,"WONK" 1; }
+  .verdict-sub{ font-family:var(--serif); font-style:italic; font-size:17px; color:var(--ink); line-height:1.3; }
+  .emojis{ font-size:30px; letter-spacing:5px; margin:18px 0 4px; }
+  .stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0; margin-top:16px; border-top:1.5px solid var(--ink); }
+  .stat{ padding:12px 4px; text-align:center; border-right:1.5px solid var(--ink); }
+  .stat:last-child{ border-right:0; }
+  .stat .big{ font-family:var(--serif); font-weight:900; font-size:30px; line-height:1; }
+  .stat .lab{ font-family:var(--mono); font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); margin-top:5px; }
+  .gapnote{ margin-top:16px; font-size:13.5px; color:var(--muted); text-align:center; line-height:1.4; }
+  .gapnote b{ color:var(--ink); }
+
+  .countdown{ text-align:center; font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:18px; }
+  .countdown b{ color:var(--truth); }
+
+  footer{ text-align:center; font-family:var(--mono); font-size:10px; color:var(--muted); padding-top:18px; letter-spacing:.03em; }
+
+  /* toast */
+  .toast{ position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px); background:var(--ink); color:var(--paper); font-family:var(--mono); font-size:13px; padding:10px 16px; border-radius:3px; opacity:0; pointer-events:none; transition:.25s; z-index:9; }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="masthead">
+      <h1 class="wordmark">MOSTLY<span class="dot">.</span></h1>
+      <div class="ticker">NO. <b id="t-no">—</b><br /><span id="t-date">—</span><br />STREAK <b id="t-streak">0</b></div>
+    </div>
+    <div class="kicker">The daily test of how well you know everyone else</div>
+  </header>
+
+  <main>
+    <!-- INTRO -->
+    <section class="screen active" id="intro">
+      <div class="lede">You think you know people.<br /><em>Prove it.</em></div>
+      <p class="sub">Five questions. Don't guess what's <em>right</em> — guess what <b>everyone else</b> said. The truth is usually weirder than you'd assume.</p>
+      <ul class="rules">
+        <li><span class="num">1</span><span>Drag the dial to <b>what percent of people</b> you think did it.</span></li>
+        <li><span class="num">2</span><span>See the truth — and what <b>the crowd</b> guessed. Mind the gap.</span></li>
+        <li><span class="num">3</span><span>Score is how well you <b>read the room</b>, not how smart you are.</span></li>
+      </ul>
+      <button class="btn" id="startBtn">Play today's round →</button>
+    </section>
+
+    <!-- GAME -->
+    <section class="screen" id="game">
+      <div class="progress" id="progress"></div>
+      <div class="qcount" id="qcount">Question 1 of 5</div>
+      <h2 class="question" id="question">—</h2>
+      <div class="qhint" id="qhint"></div>
+
+      <div class="readout">
+        <div class="pct" id="pct"><span id="pctNum">50</span><span class="sign">%</span></div>
+        <div class="lab" id="readlab">← drag your guess →</div>
+      </div>
+
+      <div class="spectrum" id="spectrum">
+        <div class="track" id="track">
+          <div class="truthfill" id="truthfill"></div>
+          <div class="fill" id="fill"></div>
+          <div class="marker crowd" id="mCrowd"><span class="pin below">CROWD</span></div>
+          <div class="marker truth" id="mTruth"><span class="pin">TRUTH</span></div>
+          <div class="thumb" id="thumb" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="Your guess, percent"></div>
+        </div>
+        <div class="scale"><span>0%</span><span>50%</span><span>100%</span></div>
+      </div>
+
+      <div class="tape" id="tape">
+        <div class="taperow you" id="rowYou"><span class="who"><i></i>You guessed</span><span class="val" id="vYou">—</span><span class="off" id="oYou"></span></div>
+        <div class="taperow crowd" id="rowCrowd"><span class="who"><i></i>The crowd guessed</span><span class="val" id="vCrowd">—</span><span class="off" id="oCrowd"></span></div>
+        <div class="taperow truth" id="rowTruth"><span class="who"><i></i>Actually <span class="grade" id="grade"></span></span><span class="val" id="vTruth">—</span><span class="off"></span></div>
+      </div>
+
+      <div class="twist" id="twist"></div>
+
+      <div class="actionbar">
+        <button class="btn" id="lockBtn">Lock it in</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="screen" id="results">
+      <div class="result-head">
+        <span class="rh-no">MOSTLY #<span id="r-no">—</span> · YOUR CARD</span>
+        <span class="rh-tip">↓ save it · post it</span>
+      </div>
+      <div class="share-stage" id="shareStage">
+        <div class="rendering" id="rendering">rendering your card…</div>
+      </div>
+
+      <div class="actionbar">
+        <div class="btn-row">
+          <button class="btn accent" id="shareBtn">Share image</button>
+          <button class="btn ghost" id="downloadBtn">Save image</button>
+        </div>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn ghost" id="challengeBtn">Challenge a friend</button>
+          <button class="btn ghost" id="copyBtn">Copy text</button>
+        </div>
+      </div>
+      <div class="countdown" id="countdown"></div>
+      <footer>Prototype · figures are illustrative ballparks · the “crowd” will be real players at scale</footer>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- data: daily sets ---------------- */
+  // truth = real-ish ballpark ; crowd = the typical (wrong) collective guess.
+  const SETS = [
+    [
+      { grp:"U.S. adults", stmt:"hold a valid passport", truth:48, crowd:33,
+        hint:"Right now, today.",
+        twist:"Almost everyone guesses low. We picture a country that never leaves — half of it has a passport in a drawer." },
+      { grp:"people", stmt:"admit they've lied on a résumé", truth:55, crowd:34,
+        hint:"Anonymous surveys, so they're being honest about lying.",
+        twist:"We assume honesty is the default. On paper, it's the exception." },
+      { grp:"Americans", stmt:"support background checks on ALL gun sales", truth:88, crowd:60,
+        hint:"Across both parties.",
+        twist:"This is what real consensus looks like. We just never get to see it — so we assume it isn't there." },
+      { grp:"adults", stmt:"sleep with their phone within arm's reach", truth:71, crowd:82,
+        hint:"On the nightstand, in the bed, under the pillow.",
+        twist:"Here we overshoot. We think everyone is as hooked as we secretly fear we are." },
+      { grp:"partnered adults", stmt:"keep a money secret from their partner", truth:30, crowd:17,
+        hint:"A hidden account, debt, or stash.",
+        twist:"The quiet stuff is always more common than anyone says out loud." },
+    ],
+    [
+      { grp:"adults", stmt:"can NOT name all three branches of government", truth:53, crowd:30,
+        hint:"Executive, legislative, judicial.",
+        twist:"We assume the basics are common knowledge. The basics are not common knowledge." },
+      { grp:"people", stmt:"have ghosted someone they were dating", truth:78, crowd:55,
+        hint:"Just vanished, no explanation.",
+        twist:"Everyone thinks they're the one who got ghosted. The math says most of us did the ghosting too." },
+      { grp:"workers", stmt:"would take a pay cut for a 4-day week", truth:64, crowd:48,
+        hint:"Fewer hours, less money.",
+        twist:"We underestimate how much people want their time back — including ourselves." },
+      { grp:"Gen Z adults", stmt:"check their phone within 5 minutes of waking", truth:80, crowd:88,
+        hint:"Eyes open, screen on.",
+        twist:"We round the young up to 'always.' Reality is high — but not as cartoonish as the panic suggests." },
+      { grp:"Americans", stmt:"believe most people can be trusted", truth:34, crowd:52,
+        hint:"General social trust.",
+        twist:"We assume each other are trusting. Mostly, we've quietly stopped." },
+    ],
+  ];
+
+  /* ---------------- daily seed ---------------- */
+  const EPOCH = Date.UTC(2026,0,1);
+  const DAY = Math.floor((Date.now() - EPOCH)/86400000);
+  const SET = SETS[((DAY % SETS.length)+SETS.length)%SETS.length];
+  const N = SET.length;
+  const PUZ_NO = DAY; // public puzzle number
+
+  const $ = function(id){ return document.getElementById(id); };
+  const clamp = function(v){ return Math.max(0, Math.min(100, v)); };
+  const fmtDate = new Date().toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+
+  /* ---------------- state ---------------- */
+  let idx = 0, guess = 50, locked = false;
+  const results = []; // {diff, grade, beat}
+
+  /* ---------------- header ---------------- */
+  $("t-no").textContent = PUZ_NO;
+  $("t-date").textContent = new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"}).toUpperCase();
+  (function initStreak(){
+    let s = 0;
+    try{
+      const last = parseInt(localStorage.getItem("mostly_lastday")||"-999",10);
+      s = parseInt(localStorage.getItem("mostly_streak")||"0",10) || 0;
+      if(last !== DAY && last !== DAY-1) s = 0; // broken streak preview
+    }catch(e){}
+    $("t-streak").textContent = s;
+  })();
+
+  /* ---------------- progress pips ---------------- */
+  const progress = $("progress");
+  for(let i=0;i<N;i++){ const p=document.createElement("div"); p.className="pip"; progress.appendChild(p); }
+  function paintPips(){
+    [].forEach.call(progress.children,function(p,i){
+      p.className = "pip" + (i<idx?" done":"") + (i===idx?" cur":"");
+    });
+  }
+
+  /* ---------------- grading ---------------- */
+  function grade(diff){
+    if(diff<=5)  return {e:"🎯", t:"BULLSEYE"};
+    if(diff<=10) return {e:"🟩", t:"SHARP"};
+    if(diff<=20) return {e:"🟨", t:"CLOSE-ISH"};
+    return {e:"🟥", t:"WAY OFF"};
+  }
+
+  /* ---------------- slider ---------------- */
+  const track=$("track"), thumb=$("thumb"), fill=$("fill"), pctNum=$("pctNum");
+  function setGuess(v, fromInput){
+    guess = clamp(Math.round(v));
+    thumb.style.left = guess+"%";
+    fill.style.width = guess+"%";
+    pctNum.textContent = guess;
+    thumb.setAttribute("aria-valuenow", guess);
+    if(fromInput && !locked){ $("readlab").textContent = "← drag your guess →"; }
+  }
+  function pointToPct(clientX){
+    const r = track.getBoundingClientRect();
+    return ((clientX - r.left)/r.width)*100;
+  }
+  let dragging=false;
+  function onDown(e){ if(locked) return; dragging=true; thumb.focus(); move(e); e.preventDefault(); }
+  function move(e){
+    if(!dragging||locked) return;
+    const x = (e.touches?e.touches[0].clientX:e.clientX);
+    setGuess(pointToPct(x), true);
+    e.preventDefault();
+  }
+  function onUp(){ dragging=false; }
+  $("spectrum").addEventListener("pointerdown", onDown);
+  window.addEventListener("pointermove", move);
+  window.addEventListener("pointerup", onUp);
+  thumb.addEventListener("keydown", function(e){
+    if(locked) return;
+    const step = e.shiftKey?10:1;
+    if(e.key==="ArrowRight"||e.key==="ArrowUp"){ setGuess(guess+step,true); e.preventDefault(); }
+    if(e.key==="ArrowLeft"||e.key==="ArrowDown"){ setGuess(guess-step,true); e.preventDefault(); }
+  });
+
+  /* ---------------- render a question ---------------- */
+  function renderQuestion(){
+    locked=false; dragging=false;
+    const q = SET[idx];
+    $("qcount").textContent = "Question "+(idx+1)+" of "+N;
+    $("question").innerHTML = "What percent of <span class='grp'>"+q.grp+"</span> "+q.stmt+"?";
+    $("qhint").textContent = q.hint||"";
+    paintPips();
+
+    // reset reveal bits
+    setGuess(50,true);
+    $("readlab").textContent = "← drag your guess →";
+    $("readlab").style.color = "var(--you)";
+    ["mCrowd","mTruth"].forEach(function(id){ $(id).classList.remove("show"); });
+    $("truthfill").style.opacity=0; $("truthfill").style.width="0%";
+    $("tape").classList.remove("show");
+    ["rowYou","rowCrowd","rowTruth"].forEach(function(id){ $(id).classList.remove("in"); });
+    $("twist").classList.remove("show"); $("twist").textContent = q.twist;
+    const lb=$("lockBtn"); lb.textContent="Lock it in"; lb.disabled=false; lb.className="btn";
+  }
+
+  /* ---------------- reveal ---------------- */
+  function reveal(){
+    if(locked) return; locked=true;
+    const q = SET[idx];
+    const diff = Math.abs(guess - q.truth);
+    const crowdDiff = Math.abs(q.crowd - q.truth);
+    const g = grade(diff);
+    const beat = diff < crowdDiff;
+    results.push({diff:diff, grade:g, beat:beat});
+
+    $("readlab").textContent = "YOU LOCKED IN";
+    $("readlab").style.color = "var(--muted)";
+    const lb=$("lockBtn"); lb.disabled=true; lb.textContent="Revealing…";
+
+    // 1) crowd marker
+    setTimeout(function(){
+      const mc=$("mCrowd"); mc.style.left=q.crowd+"%"; mc.classList.add("show");
+    },350);
+
+    // 2) truth sweep + marker
+    setTimeout(function(){
+      $("truthfill").style.opacity=1; $("truthfill").style.width=q.truth+"%";
+      const mt=$("mTruth"); mt.style.left=q.truth+"%"; mt.classList.add("show");
+      if(navigator.vibrate){ try{navigator.vibrate(18);}catch(e){} }
+    },950);
+
+    // 3) tale of the tape
+    setTimeout(function(){
+      $("tape").classList.add("show");
+      $("vYou").textContent=guess+"%"; $("oYou").textContent="off by "+diff;
+      $("vCrowd").textContent=q.crowd+"%"; $("oCrowd").textContent="off by "+crowdDiff;
+      $("vTruth").textContent=q.truth+"%"; $("grade").textContent=g.e;
+      $("rowYou").classList.add("in");
+      setTimeout(function(){ $("rowCrowd").classList.add("in"); },180);
+      setTimeout(function(){ $("rowTruth").classList.add("in"); },360);
+    },1400);
+
+    // 4) twist + next
+    setTimeout(function(){
+      $("twist").classList.add("show");
+      lb.disabled=false;
+      lb.textContent = (idx===N-1)? "See your verdict →" : "Next question →";
+      lb.className = "btn accent";
+    },2100);
+  }
+
+  $("lockBtn").addEventListener("click", function(){
+    if(!locked){ reveal(); return; }
+    if(idx===N-1){ finish(); }
+    else { idx++; renderQuestion(); window.scrollTo(0,0); }
+  });
+
+  /* ---------------- finish / results ---------------- */
+  let shareCanvas=null, shareData=null;
+
+  function finish(){
+    const bull = results.filter(function(r){return r.diff<=5;}).length;
+    const beat = results.filter(function(r){return r.beat;}).length;
+    const avg = Math.round(results.reduce(function(a,r){return a+r.diff;},0)/results.length);
+    const emojis = results.map(function(r){return r.grade.e;}).join("");
+
+    let title, sub;
+    if(avg<=8){ title="MIND READER"; sub="You actually get people. Genuinely unsettling."; }
+    else if(avg<=15){ title="WELL-CALIBRATED"; sub="You read the room better than the room reads itself."; }
+    else if(avg<=25){ title="REASSURINGLY AVERAGE"; sub="About as wrong as everyone else. Comforting, isn't it?"; }
+    else { title="BEAUTIFULLY CLUELESS"; sub="You have no idea what people think. Good news: neither do they."; }
+
+    const crowdAvg = Math.round(SET.reduce(function(a,q){return a+Math.abs(q.crowd-q.truth);},0)/SET.length);
+    // teaser = the prompt the crowd misjudged most (spoiler-free curiosity bait)
+    const teaser = SET.slice().sort(function(a,b){ return Math.abs(b.crowd-b.truth)-Math.abs(a.crowd-a.truth); })[0];
+
+    shareData = { no:PUZ_NO, title:title, sub:sub, emojis:emojis, bull:bull, beat:beat, n:N, crowdAvg:crowdAvg, teaser:teaser };
+    window.__share = "MOSTLY #"+PUZ_NO+"\n"+emojis+"\nRead the room better than most: "+beat+"/"+N+"\nplay → mostly.game";
+    $("r-no").textContent=PUZ_NO;
+
+    // streak bump
+    try{
+      const last=parseInt(localStorage.getItem("mostly_lastday")||"-999",10);
+      let s=parseInt(localStorage.getItem("mostly_streak")||"0",10)||0;
+      if(last!==DAY){ s=(last===DAY-1)?s+1:1; localStorage.setItem("mostly_streak",s); localStorage.setItem("mostly_lastday",DAY); }
+      $("t-streak").textContent=s;
+    }catch(e){}
+
+    show("results");
+    startCountdown();
+    renderCard();
+  }
+
+  function renderCard(){
+    drawShareCard(shareData).then(function(cv){
+      shareCanvas=cv; const stage=$("shareStage"); stage.innerHTML=""; stage.appendChild(cv);
+    }).catch(function(){ $("shareStage").innerHTML="<div class='rendering'>couldn't render card</div>"; });
+  }
+
+  /* ---------------- share card (canvas → png) ---------------- */
+  function rrect(x,rx,ry,w,h,r){ x.beginPath(); x.moveTo(rx+r,ry); x.arcTo(rx+w,ry,rx+w,ry+h,r); x.arcTo(rx+w,ry+h,rx,ry+h,r); x.arcTo(rx,ry+h,rx,ry,r); x.arcTo(rx,ry,rx+w,ry,r); x.closePath(); }
+  function wrap(x,text,px,py,maxW,lineH){
+    const words=String(text).split(" "); let line="", yy=py;
+    for(let i=0;i<words.length;i++){
+      const test=line?line+" "+words[i]:words[i];
+      if(x.measureText(test).width>maxW && line){ x.fillText(line,px,yy); line=words[i]; yy+=lineH; }
+      else line=test;
+    }
+    if(line) x.fillText(line,px,yy);
+    return yy;
+  }
+  function ls(x,v){ try{ x.letterSpacing=v; }catch(e){} }
+  function ensureFonts(){
+    const styles=["900 104px Fraunces","900 92px Fraunces","italic 500 44px Fraunces","italic 600 44px Fraunces","500 30px 'DM Mono'","400 26px 'DM Mono'","400 24px 'DM Mono'"];
+    var p=[]; try{ styles.forEach(function(s){ p.push(document.fonts.load(s)); }); }catch(e){}
+    return Promise.all(p).catch(function(){}).then(function(){ return document.fonts.ready; }).catch(function(){});
+  }
+  function drawShareCard(d){
+    return ensureFonts().then(function(){
+      const W=1080,H=1920,M=100, ink="#1A1712", muted="#6E6757", truth="#E04E1B";
+      const c=document.createElement("canvas"); c.width=W; c.height=H;
+      const x=c.getContext("2d");
+      x.fillStyle="#F4EFE6"; x.fillRect(0,0,W,H);
+      const g=x.createRadialGradient(W/2,H*0.42,H*0.18,W/2,H*0.5,H*0.8);
+      g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,"rgba(26,23,18,0.07)");
+      x.fillStyle=g; x.fillRect(0,0,W,H);
+      x.textBaseline="alphabetic";
+
+      // masthead
+      x.textAlign="left"; x.fillStyle=ink; ls(x,"-3px"); x.font="900 92px Fraunces";
+      x.fillText("MOSTLY", M, 152);
+      const ww=x.measureText("MOSTLY").width; x.fillStyle=truth; x.fillText(".", M+ww+8, 152); ls(x,"0px");
+      x.textAlign="right"; x.fillStyle=muted; x.font="500 30px 'DM Mono'"; x.fillText("NO. "+d.no, W-M, 152);
+      x.strokeStyle=ink; x.lineWidth=2;
+      x.beginPath(); x.moveTo(M,182); x.lineTo(W-M,182); x.stroke();
+      x.beginPath(); x.moveTo(M,189); x.lineTo(W-M,189); x.stroke();
+      x.textAlign="left"; x.fillStyle=muted; x.font="400 24px 'DM Mono'"; ls(x,"3px");
+      x.fillText("HOW WELL YOU KNOW EVERYONE ELSE", M, 236); ls(x,"0px");
+
+      // verdict
+      let y=348;
+      x.fillStyle=muted; x.font="500 28px 'DM Mono'"; ls(x,"5px"); x.fillText("TODAY'S VERDICT", M, y); ls(x,"0px");
+      x.fillStyle=ink; ls(x,"-2px"); x.font="900 104px Fraunces";
+      y=wrap(x, d.title.toUpperCase(), M, y+108, W-2*M, 100); ls(x,"0px");
+      x.fillStyle=muted; x.font="italic 500 44px Fraunces";
+      y=wrap(x, d.sub, M, y+58, W-2*M, 52);
+
+      // emoji row
+      y+=104; x.textAlign="center"; ls(x,"12px"); x.font="86px 'Hanken Grotesk'";
+      x.fillStyle=ink; x.fillText(d.emojis, W/2, y); ls(x,"0px"); x.textAlign="left";
+
+      // gap band
+      y+=64; const bH=184; rrect(x,M,y,W-2*M,bH,12); x.fillStyle=truth; x.fill();
+      x.textAlign="center"; x.fillStyle="rgba(255,255,255,.85)"; x.font="400 26px 'DM Mono'"; ls(x,"3px");
+      x.fillText("THE CROWD WAS OFF BY, ON AVERAGE", W/2, y+58); ls(x,"0px");
+      x.fillStyle="#fff"; x.font="900 96px Fraunces"; x.fillText(d.crowdAvg+" POINTS", W/2, y+150); x.textAlign="left";
+
+      // teaser
+      y+=bH+72; const tH=300; x.strokeStyle=ink; x.lineWidth=3; rrect(x,M,y,W-2*M,tH,10); x.stroke();
+      x.fillStyle=muted; x.font="500 25px 'DM Mono'"; ls(x,"3px"); x.fillText("COULD YOU HAVE CALLED THIS ONE?", M+44, y+64); ls(x,"0px");
+      x.fillStyle=ink; x.font="italic 600 44px Fraunces";
+      wrap(x, "“What % of "+d.teaser.grp+" "+d.teaser.stmt+"?”", M+44, y+130, W-2*M-88, 52);
+      x.fillStyle=truth; x.font="500 26px 'DM Mono'"; x.fillText("▶ play to find out", M+44, y+tH-36);
+
+      // footer
+      x.textAlign="center"; x.fillStyle=ink; x.font="900 76px Fraunces"; ls(x,"-1px");
+      x.fillText("MOSTLY.GAME", W/2, H-160); ls(x,"0px");
+      x.fillStyle=muted; x.font="400 28px 'DM Mono'"; x.fillText("a new round every day", W/2, H-104);
+      x.textAlign="left";
+      return c;
+    });
+  }
+  function canvasBlob(cv){ return new Promise(function(res){ if(cv.toBlob) cv.toBlob(function(b){res(b);}, "image/png"); else res(null); }); }
+  function download(cv){
+    const a=document.createElement("a"); a.href=cv.toDataURL("image/png");
+    a.download="mostly-"+(shareData?shareData.no:"card")+".png"; document.body.appendChild(a); a.click(); a.remove();
+    toast("Image saved ✓");
+  }
+
+  /* ---------------- share / challenge ---------------- */
+  function copy(text, label){
+    const done=function(){ toast(label||"Copied ✓"); };
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(fallback); }
+    else fallback();
+    function fallback(){ const t=document.createElement("textarea"); t.value=text; document.body.appendChild(t); t.select(); try{document.execCommand("copy");}catch(e){} t.remove(); done(); }
+  }
+  $("shareBtn").addEventListener("click", function(){
+    if(!shareCanvas){ copy(window.__share||"","Result copied ✓"); return; }
+    canvasBlob(shareCanvas).then(function(blob){
+      const file = blob ? new File([blob],"mostly-"+shareData.no+".png",{type:"image/png"}) : null;
+      if(file && navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({ files:[file], text:window.__share }).catch(function(){});
+      } else { download(shareCanvas); }
+    });
+  });
+  $("downloadBtn").addEventListener("click", function(){ if(shareCanvas) download(shareCanvas); });
+  $("copyBtn").addEventListener("click", function(){ copy(window.__share||"","Result text copied ✓"); });
+  $("challengeBtn").addEventListener("click", function(){
+    const beat=results.filter(function(r){return r.beat;}).length;
+    copy("I read the room "+beat+"/"+N+" on MOSTLY #"+PUZ_NO+". Bet you can't beat me → mostly.game", "Challenge copied ✓");
+  });
+
+  /* ---------------- countdown ---------------- */
+  function startCountdown(){
+    const el=$("countdown");
+    function tick(){
+      const now=new Date();
+      const next=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()+1,0,0,0));
+      let s=Math.max(0,Math.floor((next-now)/1000));
+      const h=String(Math.floor(s/3600)).padStart(2,"0"); s%=3600;
+      const m=String(Math.floor(s/60)).padStart(2,"0");
+      const ss=String(s%60).padStart(2,"0");
+      el.innerHTML="Next round drops in <b>"+h+":"+m+":"+ss+"</b>";
+    }
+    tick(); setInterval(tick,1000);
+  }
+
+  /* ---------------- toast / screens ---------------- */
+  let toastTimer;
+  function toast(msg){ const t=$("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove("show");},1800); }
+  function show(id){ [].forEach.call(document.querySelectorAll(".screen"),function(s){ s.classList.toggle("active", s.id===id); }); }
+
+  $("startBtn").addEventListener("click", function(){ show("game"); renderQuestion(); });
+})();
+</script>
+</body>
+</html>
