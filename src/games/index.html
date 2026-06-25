@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>The Arcade — Liam Howell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="A secret little arcade of games." />
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        min-height: 100dvh;
+        background:
+          radial-gradient(circle at 50% -10%, #1d2740 0, transparent 55%),
+          linear-gradient(180deg, #0c0f1a 0%, #05070d 100%);
+        color: #eaeefb;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+        display: flex;
+        justify-content: center;
+        padding: 56px 20px 80px;
+      }
+      .wrap { width: 100%; max-width: 560px; }
+      .kicker {
+        font-size: 12px; letter-spacing: 0.32em; text-transform: uppercase;
+        color: #7c89ad; font-weight: 700;
+      }
+      h1 {
+        font-size: 38px; letter-spacing: -0.03em; margin: 6px 0 6px; font-weight: 850;
+      }
+      .sub { color: #9aa6c4; font-size: 15px; margin: 0 0 30px; line-height: 1.5; }
+      .grid { display: flex; flex-direction: column; gap: 14px; }
+      a.game {
+        display: block; text-decoration: none; color: inherit;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px; padding: 20px 22px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+        transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      }
+      a.game:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255,255,255,0.22);
+        background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+      }
+      .game-top { display: flex; align-items: center; gap: 14px; }
+      .badge {
+        width: 52px; height: 52px; border-radius: 14px; flex: 0 0 auto;
+        display: grid; place-items: center; font-size: 26px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      .game h2 { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
+      .game .tag { font-size: 12.5px; color: #8a96b6; font-weight: 650; margin-top: 2px; }
+      .game p { margin: 12px 0 0; color: #aab4d0; font-size: 14px; line-height: 1.5; }
+      .arrow { margin-left: auto; color: #6b7799; font-size: 22px; }
+      .soon { opacity: 0.5; pointer-events: none; }
+      .foot { margin-top: 34px; color: #5c688a; font-size: 12.5px; }
+      .foot a { color: #8a96b6; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="kicker">Liam's secret arcade</div>
+      <h1>The Arcade 🕹️</h1>
+      <p class="sub">A few little games I'm building. Same puzzle for everyone, every day — bring a friend.</p>
+
+      <div class="grid">
+        <a class="game" href="./the-meeting/">
+          <div class="game-top">
+            <div class="badge">💼</div>
+            <div>
+              <h2>The Meeting</h2>
+              <div class="tag">Daily · office card game</div>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+          <p>Chain corporate buzzwords into combos, hit the Synergy target, and get your idea <b>APPROVED</b>. New meeting daily.</p>
+        </a>
+
+        <a class="game" href="/frostline/">
+          <div class="game-top">
+            <div class="badge">❄️</div>
+            <div>
+              <h2>Frostline</h2>
+              <div class="tag">Puzzle</div>
+            </div>
+            <div class="arrow">→</div>
+          </div>
+          <p>Tear down the cold chain. A wintry logic puzzle.</p>
+        </a>
+      </div>
+
+      <div class="foot">More soon · <a href="/">← liamhowell.com</a></div>
+    </div>
+  </body>
+</html>
