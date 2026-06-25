@@ -425,6 +425,14 @@ a:hover {
     border-bottom: 1px solid #ececf0;
 }
 
+/* When a card demo is paused (mouse-out), freeze any in-flight CSS keyframe
+   animation in place so it resumes from the same frame. The JS pauses its own
+   step clock; this covers the scan-sweep keyframe. */
+.project-stage.is-demo-paused,
+.project-stage.is-demo-paused * {
+    animation-play-state: paused !important;
+}
+
 .project-foot {
     display: flex;
     align-items: baseline;
