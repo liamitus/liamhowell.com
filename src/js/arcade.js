@@ -11,18 +11,12 @@
         var backBtn = document.getElementById('room-back');
         if (!sheet || !peel || !room) return;
 
-        var STORE_KEY = 'liam:arcade-found';
         var revealed = false; // corner peeled back and inviting a click
         var open = false;     // sheet peeled away, room showing
 
-        function store(val) {
-            try { sessionStorage.setItem(STORE_KEY, val); } catch (e) {}
-        }
-        function alreadyFound() {
-            try { return sessionStorage.getItem(STORE_KEY) === '1'; } catch (e) { return false; }
-        }
-
-        // Show the peeled corner. Idempotent — the first high-five wins.
+        // Show the peeled corner. Only ever called from a high-five, and never
+        // persisted — so the arcade stays fully hidden until the visitor
+        // actually high-fives, every page load.
         function revealPeel() {
             if (revealed) return;
             revealed = true;
@@ -30,7 +24,6 @@
             // Force a reflow so the grow-in transition runs from the hidden state.
             void peel.offsetWidth;
             peel.classList.add('is-in');
-            store('1');
         }
 
         function prefersReduced() {
@@ -117,9 +110,5 @@
         peel.addEventListener('click', openRoom);
         if (backBtn) backBtn.addEventListener('click', closeRoom);
         document.addEventListener('liam:highfive', revealPeel);
-
-        // If the arcade was already discovered this session (e.g. coming back
-        // from a game), keep the corner peeled without re-earning it.
-        if (alreadyFound()) revealPeel();
     });
 })();
