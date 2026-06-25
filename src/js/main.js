@@ -103,6 +103,10 @@
 
             btn.classList.add('is-high-five');
             fallbackTimer = setTimeout(reset, FALLBACK_MS);
+
+            // Let the high-five unlock the hidden arcade. Decoupled via a
+            // custom event so arcade.js owns that behavior.
+            document.dispatchEvent(new CustomEvent('liam:highfive'));
         }
 
         // Listen on the inner glyph so we only react to wave-high-five
