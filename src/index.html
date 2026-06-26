@@ -30,6 +30,10 @@
 <!--
  Hey friend! Enjoy picking apart the source: https://github.com/liamitus/liamhowell.com
 -->
+        <!-- Everything the visitor sees first lives on this "sheet". High-five
+             the wave and a corner peels back; click it and the whole sheet
+             peels away to reveal the arcade behind it. -->
+        <div class="page-sheet" id="page-sheet">
         <header id="header-accent" class="header-accent noselect clickable">
             <div class="header-inner">
                 <h1 class="name">Liam Howell</h1>
@@ -185,6 +189,58 @@
                 </ul>
             </section>
         </main>
+        </div><!-- /.page-sheet -->
+
+        <!-- The hidden arcade, sitting "behind" the page sheet. Kept inert
+             until the sheet peels away so it isn't focusable or announced. -->
+        <section class="games-room" id="games-room" aria-label="Hidden arcade" aria-hidden="true" inert>
+            <div class="room-inner">
+                <button type="button" class="room-back" id="room-back">
+                    <span aria-hidden="true">&larr;</span> Back to the page
+                </button>
+                <header class="room-head">
+                    <span class="room-kicker">You found the back room</span>
+                    <h2 class="room-title">Arcade</h2>
+                    <p class="room-sub">Little games I build to mess around. More to come.</p>
+                </header>
+                <div class="room-grid">
+                    <a class="game-card" href="/games/managing-up/">
+                        <div class="game-thumb game-thumb--managing" aria-hidden="true">
+                            <span class="game-thumb-glyph">📈</span>
+                        </div>
+                        <div class="game-meta">
+                            <span class="game-name">Managing Up</span>
+                            <span class="game-tag">Climb the org chart one bad decision at a time.</span>
+                        </div>
+                    </a>
+                    <a class="game-card" href="/games/mostly/">
+                        <div class="game-thumb game-thumb--mostly" aria-hidden="true">
+                            <span class="game-thumb-glyph">📊</span>
+                        </div>
+                        <div class="game-meta">
+                            <span class="game-name">Mostly</span>
+                            <span class="game-tag">Guess what everyone else said.</span>
+                        </div>
+                    </a>
+                    <a class="game-card" href="/frostline/">
+                        <div class="game-thumb game-thumb--frostline" aria-hidden="true">
+                            <span class="game-thumb-glyph">❄</span>
+                        </div>
+                        <div class="game-meta">
+                            <span class="game-name">Frostline</span>
+                            <span class="game-tag">Build the warm line. Survive the storm.</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- The peeled-back corner. Hidden until the first high-five. -->
+        <button type="button" class="page-peel" id="page-peel" aria-label="Peek behind the page — open the hidden arcade" hidden>
+            <span class="peel-reveal" aria-hidden="true"></span>
+            <span class="peel-flap" aria-hidden="true"></span>
+            <span class="peel-hint" aria-hidden="true">peek&nbsp;&rarr;</span>
+        </button>
 
         <div class="photo-modal" id="photo-modal" hidden role="dialog" aria-modal="true" aria-label="Photo of Liam">
             <button type="button" class="photo-modal-close" id="photo-modal-close" aria-label="Close">&times;</button>
@@ -194,5 +250,7 @@
         <script src="js/main.js"></script>
         <script src="js/sendtax-demo.js"></script>
         <script src="js/govroll-demo.js"></script>
+        <script src="js/peel-curl.js"></script>
+        <script src="js/arcade.js"></script>
     </body>
 </html>

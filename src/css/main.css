@@ -106,7 +106,7 @@ a:hover {
     display: inline-block;
     line-height: 1;
     transform-origin: 50% 90%;
-    animation: wave-hand 6s ease-in-out 0.6s infinite;
+    animation: wave-hand 20s ease-in-out 0.6s infinite;
     will-change: transform;
 }
 
@@ -119,15 +119,18 @@ a:hover {
     will-change: transform;
 }
 
+/* The wave gesture is compressed into the first ~8% (~1.6s) so the motion
+   stays crisp, then the hand rests for the remainder — one wave roughly
+   every 20s instead of every 6s. */
 @keyframes wave-hand {
-    0%   { transform: rotate(0deg); }
-    4%   { transform: rotate(-14deg); }
-    9%   { transform: rotate(12deg); }
-    13%  { transform: rotate(-10deg); }
-    18%  { transform: rotate(10deg); }
-    22%  { transform: rotate(-6deg); }
-    27%  { transform: rotate(0deg); }
-    100% { transform: rotate(0deg); }
+    0%    { transform: rotate(0deg); }
+    1.2%  { transform: rotate(-14deg); }
+    2.7%  { transform: rotate(12deg); }
+    3.9%  { transform: rotate(-10deg); }
+    5.4%  { transform: rotate(10deg); }
+    6.6%  { transform: rotate(-6deg); }
+    8%    { transform: rotate(0deg); }
+    100%  { transform: rotate(0deg); }
 }
 
 /* Ripple (drawn as a pseudo-element on the button) */
@@ -420,6 +423,14 @@ a:hover {
     background: #f6f7fa;
     overflow: hidden;
     border-bottom: 1px solid #ececf0;
+}
+
+/* When a card demo is paused (mouse-out), freeze any in-flight CSS keyframe
+   animation in place so it resumes from the same frame. The JS pauses its own
+   step clock; this covers the scan-sweep keyframe. */
+.project-stage.is-demo-paused,
+.project-stage.is-demo-paused * {
+    animation-play-state: paused !important;
 }
 
 .project-foot {
@@ -861,6 +872,423 @@ a:hover {
 }
 
 /* ========================================
+   Hidden arcade — page sheet, peel corner, back room
+   ======================================== */
+
+/* The sheet holds the entire front page and sits above the arcade, fully
+   occluding it until it peels away. */
+.page-sheet {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    background: #fff;
+    /* Hinge at the bottom-left — the corner opposite the grabbed top-right
+       one — so the sheet peels up and back rather than sliding off. */
+    transform-origin: 0% 100%;
+    will-change: transform, opacity;
+}
+
+.page-sheet.is-peeling {
+    /* Per-keyframe timing (below) does the shaping, so keep the overall
+       curve linear. */
+    animation: page-peel-off 1.15s linear forwards;
+    pointer-events: none;
+}
+
+.page-sheet.is-restoring {
+    animation: page-peel-on 0.6s cubic-bezier(0.22, 0.8, 0.3, 1) forwards;
+}
+
+/* A peel, not a drop: the top-right corner lifts toward the viewer, then the
+   whole sheet swings open around the bottom-left hinge like a turning page,
+   curling away to uncover the arcade behind. */
+@keyframes page-peel-off {
+    0% {
+        transform: perspective(1500px) rotateX(0) rotateY(0) rotateZ(0) translateZ(0);
+        opacity: 1;
+        animation-timing-function: cubic-bezier(0.3, 0.7, 0.4, 1);
+    }
+    24% {
+        transform: perspective(1500px) rotateX(5deg) rotateY(-14deg) rotateZ(-1deg) translateZ(50px);
+        opacity: 1;
+        animation-timing-function: cubic-bezier(0.45, 0, 0.7, 0.6);
+    }
+    62% {
+        transform: perspective(1500px) rotateX(10deg) rotateY(-66deg) rotateZ(-2deg) translateZ(70px);
+        opacity: 1;
+        animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.5);
+    }
+    100% {
+        transform: perspective(1500px) rotateX(14deg) rotateY(-120deg) rotateZ(-3deg) translateZ(80px);
+        opacity: 0;
+    }
+}
+
+@keyframes page-peel-on {
+    0% {
+        transform: perspective(1500px) rotateX(14deg) rotateY(-120deg) rotateZ(-3deg) translateZ(80px);
+        opacity: 0;
+    }
+    100% {
+        transform: perspective(1500px) rotateX(0) rotateY(0) rotateZ(0) translateZ(0);
+        opacity: 1;
+    }
+}
+
+/* A soft shadow that sweeps in from the lifting top-right corner, faking the
+   shading of a curling page as it peels. */
+.page-sheet.is-peeling::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(245deg, rgba(8, 12, 20, 0.34) 0%, rgba(8, 12, 20, 0.06) 40%, rgba(8, 12, 20, 0) 62%);
+    opacity: 0;
+    animation: peel-shade 1.15s ease-out forwards;
+}
+
+@keyframes peel-shade {
+    0%   { opacity: 0; }
+    30%  { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+body.arcade-open {
+    overflow: hidden;
+}
+
+/* Soft-fold peel layers, built and torn down by peel-curl.js. The flat layer
+   shows the not-yet-peeled page; the flap folds the cloned corner over the
+   crease; the shade reads as the paper's curled-over back. */
+.peel-fold-layer {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 20;
+    background: transparent;
+    will-change: mask-image, transform;
+}
+
+/* The rolled-up edge of the peeling page. The cross-gradient (a dark underside,
+   a bright top highlight, soft shadows at both rims) reads as a paper cylinder;
+   the drop shadow grounds it on the page it's lifting from. */
+.peel-fold-lip {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 22;
+    pointer-events: none;
+    border-radius: 999px;
+    background: linear-gradient(to bottom,
+        rgba(15, 22, 38, 0.28) 0%,
+        rgba(15, 22, 38, 0.10) 6%,
+        #e9edf3 24%,
+        #ffffff 50%,
+        #d4dae6 76%,
+        #aab2c4 94%,
+        rgba(15, 22, 38, 0.22) 100%);
+    box-shadow: 0 16px 24px -8px rgba(12, 18, 32, 0.5);
+    will-change: left, top, transform;
+}
+
+/* ----- The peeled-back corner (top-right dog-ear) ----- */
+.page-peel {
+    /* Anchored to the top of the page (scrolls away with content), not pinned
+       to the window. Body is static, so this resolves to the document. */
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 92px;
+    height: 92px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    z-index: 30;
+    opacity: 0;
+    transform: translate(42%, -42%) scale(0.2);
+    transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.page-peel[hidden] { display: none; }
+
+.page-peel.is-in {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+}
+
+/* Once clicked, the corner lifts away with the sheet. */
+.page-peel.is-spent {
+    opacity: 0;
+    transform: translate(60%, -60%) scale(0.6) rotate(-8deg);
+    transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.55, 0.06, 0.32, 1);
+    pointer-events: none;
+}
+
+/* Dark triangle = the gap the lifted corner reveals (arcade peeking through).
+   Top-right corner: the gap is the upper-right triangle. */
+.peel-reveal {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    background: radial-gradient(135% 135% at 100% 0, #20355a 0%, #0a0f18 72%);
+}
+
+/* Pale triangle = the curled-over back of the page (lower-left triangle for a
+   top-right dog-ear), casting a crease shadow down toward the page interior. */
+.peel-flap {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+    background: linear-gradient(45deg, #c7cdda 0%, #e9ecf3 46%, #ffffff 78%);
+    border-bottom-left-radius: 7px;
+    filter: drop-shadow(-4px 4px 7px rgba(13, 20, 34, 0.35));
+    transform-origin: 100% 0;
+    transition: transform 0.25s ease;
+}
+
+.page-peel.is-in .peel-flap {
+    animation: peel-flutter 3.2s ease-in-out 0.8s infinite;
+}
+
+.page-peel:hover .peel-flap,
+.page-peel:focus-visible .peel-flap {
+    transform: scale(1.1);
+    animation: none;
+}
+
+.page-peel.is-spent .peel-flap {
+    animation: none;
+}
+
+@keyframes peel-flutter {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.07); }
+}
+
+.page-peel:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
+.peel-hint {
+    position: absolute;
+    right: 84px;
+    top: 26px;
+    white-space: nowrap;
+    font-family: 'Bree Serif', serif;
+    font-size: 0.8em;
+    color: var(--accent);
+    background: #fff;
+    padding: 3px 10px;
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(13, 20, 34, 0.18);
+    opacity: 0;
+    transform: translateX(8px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.page-peel:hover .peel-hint,
+.page-peel:focus-visible .peel-hint {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* ----- The arcade itself, sitting behind the sheet ----- */
+.games-room {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    overflow-y: auto;
+    padding: 7vh 24px 64px;
+    color: #e8edf6;
+    background: radial-gradient(140% 120% at 50% -10%, #1d3252 0%, #0b111c 62%, #070b13 100%);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+body.arcade-open .games-room {
+    visibility: visible;
+    opacity: 1;
+}
+
+.room-inner {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.room-back {
+    appearance: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: #cdd6e6;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font: inherit;
+    font-size: 0.82em;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.room-back:hover,
+.room-back:focus-visible {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.32);
+    color: #fff;
+    outline: none;
+}
+
+.room-head {
+    margin: 38px 0 28px;
+}
+
+.room-kicker {
+    display: inline-block;
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #7f93b5;
+    margin-bottom: 10px;
+}
+
+.room-title {
+    font-family: 'Bree Serif', serif;
+    font-size: 2.6em;
+    line-height: 1;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.room-sub {
+    color: #9fb0cc;
+    font-size: 0.95em;
+}
+
+.room-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.game-card {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+a.game-card:hover,
+a.game-card:focus-visible {
+    transform: translateY(-3px);
+    border-color: rgba(140, 190, 255, 0.5);
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    outline: none;
+}
+
+.game-thumb {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.game-thumb-glyph {
+    position: relative;
+    z-index: 1;
+    font-size: 3em;
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+
+.game-thumb--frostline {
+    background: radial-gradient(120% 140% at 50% 0%, #6ea8e6 0%, #2f5d99 45%, #16335c 100%);
+}
+
+.game-thumb--frostline::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(115deg, transparent 42%, rgba(255, 255, 255, 0.30) 50%, transparent 58%),
+        linear-gradient(250deg, transparent 46%, rgba(255, 255, 255, 0.16) 52%, transparent 60%);
+    mix-blend-mode: screen;
+}
+
+.game-thumb--managing {
+    background: radial-gradient(120% 140% at 50% 0%, #e3ab57 0%, #9a6b2e 46%, #533616 100%);
+}
+
+.game-thumb--managing::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* faint rising "ladder" rungs */
+    background: repeating-linear-gradient(155deg,
+        transparent 0 16px, rgba(255, 255, 255, 0.06) 16px 18px);
+}
+
+.game-thumb--mostly {
+    background: radial-gradient(120% 140% at 50% 0%, #9b7ad6 0%, #5b3f9e 46%, #2c1d57 100%);
+}
+
+.game-meta {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.game-name {
+    font-family: 'Bree Serif', serif;
+    font-size: 1.2em;
+    color: #fff;
+}
+
+.game-tag {
+    font-size: 0.86em;
+    color: #9fb0cc;
+}
+
+/* On narrow screens the fixed corner sits over full-width body text, so make
+   it smaller and drop the hover-only hint (there's no hover on touch). */
+@media (max-width: 600px) {
+    .page-peel {
+        width: 66px;
+        height: 66px;
+    }
+    .peel-hint {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-peel,
+    .page-peel.is-in,
+    .page-peel.is-spent {
+        transform: none;
+        transition: opacity 0.2s ease;
+    }
+    .page-peel.is-in .peel-flap { animation: none; }
+    .page-sheet.is-peeling { animation: none; opacity: 0; pointer-events: none; }
+    .page-sheet.is-peeling::after { animation: none; opacity: 0; }
+    .page-sheet.is-restoring { animation: none; opacity: 1; }
+}
+
+/* ========================================
    Responsive
    ======================================== */
 @media (min-width: 640px) {
@@ -905,6 +1333,14 @@ a:hover {
     .project-grid {
         grid-template-columns: 1fr 1fr;
         gap: 22px;
+    }
+
+    .room-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .room-title {
+        font-size: 3em;
     }
 }
 
