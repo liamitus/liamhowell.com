@@ -94,18 +94,21 @@
         var W = window.innerWidth, H = window.innerHeight;
         var stop = (e * 100).toFixed(3) + '%';
 
-        // The not-yet-peeled page keeps its bottom-left side; the top-right is
-        // masked away, uncovering the arcade behind.
+        // The crease is perpendicular to the top-right -> bottom-left peel
+        // direction. Run the mask gradient *along* that direction (computed per
+        // viewport) so its hard edge stays parallel to the lip. A plain
+        // `to bottom left` keyword angles the edge to the other diagonal, so on
+        // non-square screens the lip and the page edge wouldn't line up.
+        var maskDeg = (Math.atan2(-W, -H) * 180 / Math.PI).toFixed(2);
         setMask(built.flatWrap,
-            'linear-gradient(to bottom left, transparent ' + stop + ', #000 ' + stop + ')');
+            'linear-gradient(' + maskDeg + 'deg, transparent ' + stop + ', #000 ' + stop + ')');
 
-        // The rolled lip rides the crease line (through the crease point, along
-        // the page's other diagonal).
+        // The rolled lip rides that same crease line.
         var px = W * (1 - e), py = H * e;
-        var deg = Math.atan2(W, H) * 180 / Math.PI;
+        var deg = (Math.atan2(W, H) * 180 / Math.PI).toFixed(2);
         built.lip.style.left = px.toFixed(1) + 'px';
         built.lip.style.top = py.toFixed(1) + 'px';
-        built.lip.style.transform = 'translate(-50%, -50%) rotate(' + deg.toFixed(2) + 'deg)';
+        built.lip.style.transform = 'translate(-50%, -50%) rotate(' + deg + 'deg)';
     }
 
     function animate(from, to) {
