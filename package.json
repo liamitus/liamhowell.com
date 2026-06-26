@@ -7,6 +7,6 @@
   "homepage": "https://liamhowell.com",
   "scripts": {
     "dev": "npx serve src -p 3000",
-    "deploy": "MSG=$(git log -1 --format=%s) && TARGET=$(cd \"$(git rev-parse --git-common-dir)/../..\" && pwd)/liamitus.github.io && cp -R src/* \"$TARGET\" && cd \"$TARGET\" && git add . && git commit -am \"Deploy: $MSG\" && git push"
+    "deploy": "bash deploy.sh"
   }
 }
