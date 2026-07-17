@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Make your own game — Liam Howell</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="I want to make a game — where do I start? Use universal-game-engine: a free, open-source, testing-first web game template built for making games with AI assistants like Claude and ChatGPT."
+    />
+    <link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32" />
+    <link href="/css/fonts.css" rel="stylesheet" type="text/css" />
+    <link href="/css/main.css" rel="stylesheet" type="text/css" />
+    <style>
+      /* Page-local styles; leans on main.css for fonts/vars/arcade chrome. */
+      .myo-body { max-width: 720px; margin: 0 auto; padding: 8px 0 64px; }
+      .myo-body a { color: #8fd6b0; }
+      .myo-body a:hover, .myo-body a:focus-visible { color: #c4ecd7; }
+      .myo-body p, .myo-body li { line-height: 1.65; }
+      .myo-body h3 { margin: 36px 0 10px; font-size: 1.15rem; }
+      .myo-body ul { padding-left: 1.2em; }
+      .myo-links a { font-weight: 700; }
+      .myo-prompt {
+        position: relative;
+        margin: 14px 0 10px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.28);
+        padding: 18px 18px 16px;
+      }
+      .myo-prompt pre {
+        margin: 0;
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+      .myo-copy {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font: inherit;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        cursor: pointer;
+      }
+      .myo-copy:hover { background: rgba(255, 255, 255, 0.16); }
+      .myo-run { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 4px; }
+      .myo-run a, .myo-run a:hover {
+        display: inline-block;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #eef4f9;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .myo-run a:hover { background: rgba(255, 255, 255, 0.18); }
+      .myo-fineprint { font-size: 0.82rem; opacity: 0.75; }
+    </style>
+  </head>
+  <body class="arcade-open">
+    <section class="games-room" aria-label="Make your own game">
+      <div class="room-inner">
+        <a class="room-back" href="/games/" style="display:inline-block">
+          <span aria-hidden="true">&larr;</span> Back to the arcade
+        </a>
+        <header class="room-head">
+          <span class="room-kicker">The machine behind the machines</span>
+          <h2 class="room-title">Make your own game</h2>
+          <p class="room-sub">"I want to make a game" is a solved prompt now. Here's the toolbox.</p>
+        </header>
+
+        <div class="myo-body">
+          <p>
+            If you're a software engineer who has ever said <em>"I want to make a game"</em> and then
+            bounced off Unity tutorials, this page is for you. The games in this arcade are built on
+            <a href="https://github.com/liamitus/universal-game-engine" target="_blank" rel="noopener"
+              ><strong>universal-game-engine</strong></a
+            >
+            — a free, MIT-licensed template for making web games <em>with an AI assistant</em>, built
+            around the one thing AI-generated code desperately needs: <strong>proof it works</strong>.
+          </p>
+
+          <h3>The pitch, for engineers</h3>
+          <p>
+            Game code is usually untestable by construction — logic tangled into render loops,
+            <code>Math.random()</code> everywhere, correctness checked by playing. This template
+            inverts that: the entire simulation is a pure, deterministic function over plain data
+            (seeded RNG, fixed timestep, zero DOM), so it runs headless in Node and fast-forwards an
+            hour of gameplay in milliseconds. Bots play the real game through the same command API as
+            the UI. Tests prove every ending is reachable; Monte-Carlo bands guard the balance; a
+            purity gate fails the build if anyone — human or AI — sneaks nondeterminism into the sim.
+            Rendering is a thin, swappable adapter. The whole thing deploys free as a static bundle.
+          </p>
+          <ul class="myo-links">
+            <li><a href="https://github.com/liamitus/universal-game-engine" target="_blank" rel="noopener">GitHub: liamitus/universal-game-engine</a> — use it as a template</li>
+            <li><a href="/universal-game-engine/" target="_blank" rel="noopener">Live demo</a> of the included starter game</li>
+          </ul>
+
+          <h3>Dream one up right now</h3>
+          <p>
+            Copy this prompt into your AI of choice. It seeds the assistant with the template and a
+            workflow that starts with <em>finding a game you'd actually enjoy building</em> — then
+            builds it test-first.
+          </p>
+
+          <div class="myo-prompt">
+            <button class="myo-copy" id="copy-btn" type="button">Copy</button>
+            <pre id="uge-prompt">I want to make a game — a small web game I can actually finish: built with an AI coding assistant, properly tested, and deployed free as a static site.
+
+Use this template: https://github.com/liamitus/universal-game-engine — universal-game-engine, a testing-first web game template designed for AI-assisted development. It has a deterministic, headless TypeScript simulation core (seeded RNG, fixed timestep) fully separated from rendering, a command API shared by the UI and by test bots, and a Vitest harness where bot playthroughs prove the game is winnable and Monte-Carlo balance tests keep the numbers honest. Clone it, read its README and CLAUDE.md, and follow the workflow they describe.
+
+Step 1 — Find the game: ask me up to three questions about what I enjoy, then pitch three concepts sized for a solo dev (one core loop, one screen, a week of evenings). We will pick one together.
+Step 2 — Build it the template way: design doc with tuning targets first, then the sim (state, systems, commands), then tests proving a bot can reach every ending, then rendering last.
+Step 3 — Ship it: when npm run check is green, deploy the static build for free (a GitHub Pages workflow is included).</pre>
+          </div>
+
+          <div class="myo-run">
+            <a id="run-claude" href="https://claude.ai/new" target="_blank" rel="noopener">Run it in Claude &rarr;</a>
+            <a id="run-chatgpt" href="https://chatgpt.com/" target="_blank" rel="noopener">Run it in ChatGPT &rarr;</a>
+          </div>
+          <p class="myo-fineprint">
+            The buttons prefill the prompt. An agentic coding tool (Claude Code, Codex, Cursor) will
+            take it furthest — it can clone the repo and run the tests — but chat works: paste the
+            prompt, dream up the game, and bring the plan to your editor.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      (function () {
+        var prompt = document.getElementById('uge-prompt').textContent;
+        var q = encodeURIComponent(prompt);
+        document.getElementById('run-claude').href = 'https://claude.ai/new?q=' + q;
+        document.getElementById('run-chatgpt').href = 'https://chatgpt.com/?q=' + q;
+        var btn = document.getElementById('copy-btn');
+        btn.addEventListener('click', function () {
+          navigator.clipboard.writeText(prompt).then(function () {
+            btn.textContent = 'Copied ✓';
+            setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

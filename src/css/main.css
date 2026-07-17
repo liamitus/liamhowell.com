@@ -1245,6 +1245,14 @@ a.game-card:focus-visible {
     background: radial-gradient(120% 140% at 50% 0%, #9b7ad6 0%, #5b3f9e 46%, #2c1d57 100%);
 }
 
+.game-thumb--dyekm {
+    background: radial-gradient(120% 140% at 50% 0%, #ff8a6b 0%, #c9527e 48%, #5a2c52 100%);
+}
+
+.game-thumb--make {
+    background: radial-gradient(120% 140% at 50% 0%, #7ad6a4 0%, #3f9e70 46%, #1d5741 100%);
+}
+
 .game-meta {
     padding: 14px 16px 16px;
     display: flex;
