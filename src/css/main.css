@@ -1236,10 +1236,10 @@ a.game-card:focus-visible {
     content: '';
     position: absolute;
     inset: 0;
-    /* lamplight through smoke */
+    /* a streetlamp above, smoke pooling below */
     background:
-        radial-gradient(60% 50% at 22% 12%, rgba(255, 226, 173, 0.28), transparent 70%),
-        repeating-linear-gradient(90deg, transparent 0 22px, rgba(0, 0, 0, 0.18) 22px 24px);
+        radial-gradient(55% 45% at 26% 6%, rgba(255, 226, 173, 0.30), transparent 72%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.42), transparent 55%);
 }
 
 .game-thumb--managing {
