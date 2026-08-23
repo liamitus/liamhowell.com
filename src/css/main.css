@@ -1178,6 +1178,7 @@ body.arcade-open .games-room {
 }
 
 .game-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     background: rgba(255, 255, 255, 0.04);
@@ -1283,6 +1284,34 @@ a.game-card:focus-visible {
 .game-tag {
     font-size: 0.86em;
     color: #9fb0cc;
+}
+
+/* "Desktop only" badge — hidden by default, revealed on touch devices that
+   can't play the mouse/keyboard games. */
+.game-badge {
+    display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    .game-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+        padding: 4px 9px;
+        font-size: 0.72em;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: #dce8ff;
+        background: rgba(8, 18, 38, 0.78);
+        border: 1px solid rgba(140, 190, 255, 0.45);
+        border-radius: 999px;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
 }
 
 /* On narrow screens the fixed corner sits over full-width body text, so make
