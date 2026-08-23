@@ -1,0 +1,972 @@
+<!doctype html>
+<!--
+  Capone. Copyright (c) 2026 Liam Howell. All rights reserved.
+  Source-available, non-commercial use with credit only. See LICENSE.
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="copyright" content="Copyright (c) 2026 Liam Howell. All rights reserved." />
+    <title>Capone, city prototype</title>
+    <style>
+      /* THE CHROME. Nightclub deco (DESIGN-STYLE.md): black lacquer, brass rules, marquee type.
+         Tokens first; every dark surface reads from these. The paper keeps its own cream. */
+      :root {
+        --ink: #16120d; --ink-2: #1e1913; --ink-3: #292217;
+        --line: #3b3223; --line-dim: #2b2418;
+        --brass: #b08d3f; --brass-dim: #71592e; --brass-faint: rgba(176,141,63,.28);
+        --gold: #ffd24a; --gold-soft: #ffd9a0;
+        /* The three greys are a legibility ladder, not just a mood: 12.5 : 6.9 : 4.7 against the
+           panel. --dimc used to be #6e6654, which is 3.2:1, under the 4.5 floor for body text,
+           and it carries the section labels over the orders panel, every stat key, and the line
+           that teaches the core verb ("click to choose who goes"). --muted moved up with it so
+           the step between the two stays readable as a step. Same warm hues, one stop brighter. */
+        --cream: #e7dfca; --text: #ddd5c1; --muted: #a89e85; --dimc: #8a8168;
+        --blood: #ff8d7e; --blood-deep: #7a2f2a; --verdigris: #8fce9f; --verdigris-deep: #3a5a3e;
+        --police: #7d93bd;
+        --font-marquee: 'Limelight', 'Playfair Display', Georgia, serif;
+        --font-chrome: 'Jost', system-ui, sans-serif;
+        /* TYPE SCALE: the standard web ladder (12 14 16 18 20 24 30 36 48), in rem so one
+           knob moves all of it. Nothing sets a px font-size any more: pick the nearest step.
+           The floor is 12px, the accessible minimum, no more 9px eyebrow labels. */
+        --fs-xs: 0.75rem;    /* 12: eyebrow caps, badges, meta */
+        --fs-sm: 0.875rem;   /* 14: the working text: crew cards, dossier rows, buttons */
+        --fs-base: 1rem;     /* 16: panel body, save rows, the seed box */
+        --fs-lg: 1.125rem;   /* 18, panel titles */
+        --fs-xl: 1.25rem;    /* 20, the dossier name */
+        --fs-2xl: 1.5rem;    /* 24 */
+        --fs-3xl: 1.875rem;  /* 30: the cash figure, the take */
+        --fs-4xl: 2.25rem;   /* 36, headlines */
+        --fs-5xl: 3rem;      /* 48: the masthead, the title */
+        /* UI SCALE, main.ts writes --ui-scale (0.8 … 1.2) from Settings. Every font size is a
+           rem off this root, and the panels' own widths/portraits are rem too, so the chrome
+           grows as one piece instead of text outgrowing the box it sits in. */
+        --ui-scale: 1;
+        --hud-w: 21rem; /* border-box, so this is the whole panel: the old 262px + its padding, grown with the type */
+      }
+      /* the root font size IS the scale knob, never set a font-size on <html> anywhere else,
+         or the rem the whole scale is built on starts measuring itself */
+      html { font-size: calc(100% * var(--ui-scale)); }
+      html, body { margin: 0; height: 100%; background: #0c0a07; overflow: hidden; font-family: var(--font-chrome); color: var(--text); }
+      body { font-size: var(--fs-sm); }
+      #app { position: fixed; inset: 0; }
+      /* panels: sharp corners, brass outer line, faint inner hairline, the double rule */
+      /* the panel is a column that grows (crew, orders, the objective, the tutorial's HOW) and
+         at the larger interface sizes (or on a short laptop) it would run off the bottom of the
+         screen with the Menu button on it. Cap it to the window and let it scroll instead. */
+      #hud { position: fixed; left: 14px; top: 14px; box-sizing: border-box; width: var(--hud-w); max-height: calc(100vh - 28px); overflow-y: auto; overflow-x: hidden; background: rgba(20,16,11,.88); padding: .8rem .95rem; border: 1px solid var(--brass-dim); user-select: none; box-shadow: 0 10px 34px rgba(0,0,0,.45); scrollbar-width: thin; scrollbar-color: var(--brass-dim) transparent; }
+      #hud::before { content: ''; position: absolute; inset: 3px; border: 1px solid var(--brass-faint); pointer-events: none; }
+      #hud b { color: #f4eede; font-weight: 600; font-size: var(--fs-base); }
+      .dim { color: var(--dimc); font-size: var(--fs-sm); }
+      .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: var(--fs-sm); margin-bottom: 9px; }
+      .stats > div { display: flex; align-items: baseline; gap: 6px; }
+      .stats .k { color: var(--dimc); min-width: 3.5rem; }
+      /* the law's two readings are SENTENCES, not figures: "75% · PUBLIC ENEMY NO. 1",
+         "60% · the grand jury sits". Sharing the books' two-column grid, they wrapped to
+         four ragged lines with the last word hanging alone. Each takes the whole row, and
+         the wider label gutter lines the two numbers up under each other. */
+      #notorow, #fedrow { grid-column: 1 / -1; }
+      #notorow .k, #fedrow .k { min-width: 4.75rem; }
+      .stats span:not(.k) { color: #efe9d8; font-variant-numeric: tabular-nums; }
+      /* CASH, the marquee number; the one glyph moment the panel gets */
+      .cashrow { display: flex; align-items: baseline; gap: 8px; margin: 0 0 8px; cursor: pointer; }
+      .cashrow #money { color: var(--gold); font-family: var(--font-marquee); font-weight: 400; font-size: var(--fs-3xl); letter-spacing: .02em; text-shadow: 0 0 16px rgba(255,210,74,.22); }
+      /* the caret is the ONLY affordance on the whole panel for two hidden drawers (the books
+         under the cash line, the day's log under the status strip). At the dim grey it used to
+         wear it read as punctuation, so nobody opened either one. It gets the brass instead:
+         this panel spends brass on money, rank and the objective, and "there is more here" is
+         worth one hairline of it. */
+      .cashcaret { margin-left: auto; color: var(--brass-dim); font-size: var(--fs-xs); }
+      .cashrow:hover .cashcaret { color: var(--gold-soft); }
+      .books { margin: -2px 0 9px; padding: 8px 9px 3px; background: var(--ink); border: 1px solid var(--line-dim); border-radius: 2px; }
+      .books.hidden { display: none; }
+      /* THE CLOCK BLOCK: the day, the sun on its arc, the gears that drive them, and the
+         governor's chip, one instrument closed by a hairline. The gears used to live under
+         the crew list, which meant the control you touch most often slid further down the
+         panel with every man you hired (at six of them it went under the fold, along with
+         the objective). Sat under the face they drive, they hold still, and the block reads
+         as one thing: what time it is, and how fast it's going. */
+      .timebox { margin-bottom: 9px; padding-bottom: 8px; border-bottom: 1px solid var(--line-dim); }
+      /* the DAY line, the sun runs its arc dawn→dusk instead of an anonymous progress bar */
+      .dayrow { display: flex; align-items: center; gap: 6px; font-size: var(--fs-sm); margin-bottom: 6px; }
+      .dayrow .k { color: var(--dimc); min-width: 3.5rem; }
+      .dayrow #day { color: #efe9d8; font-variant-numeric: tabular-nums; }
+      .sunarc { margin-left: auto; width: 6rem; height: 1.5rem; overflow: visible; flex: none; }
+      .sunarc #arcsky { transition: fill 1s linear; stroke: rgba(255,255,255,.07); stroke-width: 1; }
+      .sunarc .sa-hz { stroke: rgba(255,255,255,.16); stroke-width: 1; }
+      .sunarc .sa-arc { stroke: rgba(255,255,255,.12); stroke-width: 1; stroke-dasharray: 2 3; }
+      .sunarc .sa-tick { stroke: rgba(255,255,255,.2); stroke-width: 1; }
+      .sunarc #sunicon { filter: drop-shadow(0 0 3.5px rgba(255,210,74,.8)); }
+      .sunarc #moonicon { filter: drop-shadow(0 0 3px rgba(190,205,240,.7)); }
+      .nightgov { font-size: var(--fs-xs); letter-spacing: .08em; color: var(--police); text-align: right; padding: 4px 2px 0 0; opacity: .85; }
+      /* the LOG, one live line; click the strip for the day's full traffic */
+      .logrow { display: flex; align-items: baseline; gap: 6px; cursor: pointer; }
+      .logrow .msg { flex: 1; min-width: 0; }
+      .logcaret { color: var(--brass-dim); font-size: var(--fs-xs); flex: none; }
+      .logrow:hover .logcaret { color: var(--gold-soft); }
+      #loghist { max-height: 180px; overflow-y: auto; margin: 4px 0 6px; padding: 6px 8px; background: var(--ink); border: 1px solid var(--line-dim); border-radius: 2px; font-size: var(--fs-sm); }
+      #loghist.hidden { display: none; }
+      .lg-row { color: var(--muted); padding: 2px 0; line-height: 1.35; }
+      .lg-row:first-child { color: var(--gold-soft); }
+      .lg-t { color: var(--dimc); font-variant-numeric: tabular-nums; margin-right: 6px; white-space: nowrap; }
+      /* section head: brass caps over a hairline, the deco rule */
+      .crewhead { display: flex; align-items: baseline; gap: 8px; color: var(--brass); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .18em; margin: 9px 0 6px; border-bottom: 1px solid var(--line-dim); padding-bottom: 4px; }
+      .crewhead .pr { margin-left: auto; text-transform: none; letter-spacing: .02em; color: var(--dimc); }
+      /* THE CARD LIST IS THE ONLY THING IN THE PANEL THAT GROWS WITHOUT LIMIT, so it is the only
+         thing that gets to scroll. Below it, the Paper/Menu row, the objective and the log strip
+         are fixed chrome and must never leave the screen: at six men they used to be pushed off
+         the bottom, which cost a new player the tutorial's own instruction line. The cap is a
+         viewport fraction so it stays honest at every window height and interface size, and the
+         orders panel deliberately sits OUTSIDE the scroller (see updateCrewHud). */
+      /* The box gets a height budget; the two things inside it share it out. The cap is what is
+         left of the window once the fixed chrome is accounted for: the cash line and the clock
+         above, and the Paper/Menu row, the hover line, the objective and the log strip below,
+         which is about 26rem of the panel and grows with the interface size because it is rem.
+         Inside, the card list is the flexible one and the selected man's orders are not, so
+         opening a man's orders takes height FROM the list rather than pushing the panel's foot
+         off the screen. Each keeps a floor and its own scrollbar, so nothing can be squeezed to
+         nothing. (#hud's own overflow stays the backstop for a very short window.) */
+      #crewbox { display: flex; flex-direction: column; min-height: 0; max-height: max(11rem, calc(100vh - 26rem)); font-size: var(--fs-sm); }
+      #crew { flex: 1 1 auto; min-height: 3.25rem; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--brass-dim) transparent; }
+      #crewdetail { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--brass-dim) transparent; }
+      /* flexbox shrinks the two in proportion to their content, which on a short window leaves
+         the orders panel a sliver: the wrong way round, since the orders are the thing you just
+         clicked a man to see. The floor keeps his name and his first row of buttons on screen
+         whatever the crew has grown to. */
+      #crewdetail:not(:empty) { min-height: 6.5rem; margin-bottom: 8px; }
+      .crew { display: flex; flex-direction: column; gap: 5px; font-size: var(--fs-sm); margin-bottom: 8px; }
+      /* a two-row crew card: portrait on the left, name/weapon/status up top, stats + actions below */
+      .crew .c-card { display: grid; grid-template-columns: .625rem 3.25rem 1fr; gap: 7px; padding: 6px 7px; border-radius: 3px; cursor: pointer; border: 1px solid transparent; background: var(--ink-2); }
+      /* the aggression notches (G2's slider): guns-out top, quiet bottom; the lit one is his stance */
+      .crew .c-stance { display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+      /* the painted notch stays small (it is a gauge, and three of them have to stack inside a
+         card), but a 10x12 target for a real tactical control is a miss you feel every time you
+         reach for it. The ::after pads the hit area out into the card's own gutter and half the
+         gap above and below, so the strip is continuous and nothing is left un-clickable. */
+      .crew .stn { position: relative; width: .625rem; height: .75rem; border-radius: 2px; background: #221c12; border: 1px solid var(--line); cursor: pointer; }
+      .crew .stn::after { content: ''; position: absolute; inset: -2px -6px; }
+      .crew .stn:hover { border-color: var(--sc); }
+      .crew .stn.on { background: var(--sc); border-color: var(--sc); }
+      .crew .c-card:hover { background: var(--ink-3); }
+      .crew .c-card.sel { background: #2c2514; border-color: var(--brass); }
+      .crew .c-card.down { opacity: .5; cursor: default; }
+      .crew .c-card.lie { opacity: .68; }
+      /* the portrait: HIS OWN FACE, printed (src/render/portrait.ts), with a state lamp bottom
+         right. The plate brings its own cream field, so the box no longer paints a background
+         of its own; the role ring and the lamp still ride on top. */
+      .crew .c-portrait { position: relative; width: 3.25rem; height: 3.9rem; border-radius: 3px; overflow: hidden;
+        background: #14100b; border: 1.5px solid var(--role); box-shadow: inset 0 0 8px rgba(0,0,0,.4); }
+      .crew .c-portrait .pt, .m-portrait .pt { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      .crew .c-sil { position: absolute; left: 50%; bottom: -1px; transform: translateX(-50%); width: 1.875rem; height: auto; fill: var(--role); opacity: .92; }
+      .crew .c-lamp { position: absolute; right: 4px; bottom: 4px; width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #0f0c08; box-shadow: 0 0 5px currentColor; }
+      .crew .c-card[data-state="fight"] .c-portrait { animation: cppulse 1s ease-in-out infinite; }
+      @keyframes cppulse { 0%,100% { box-shadow: inset 0 0 8px rgba(0,0,0,.4), 0 0 0 rgba(255,90,74,0); } 50% { box-shadow: inset 0 0 8px rgba(0,0,0,.4), 0 0 7px rgba(255,90,74,.7); } }
+      .crew .c-body { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+      .crew .c-l1, .crew .c-l2 { display: flex; align-items: center; gap: 7px; min-width: 0; }
+      .crew .nm { color: #f2ecdc; font-weight: 600; white-space: nowrap; }
+      .crew .mus { color: var(--muted); font-size: var(--fs-xs); font-weight: 600; }
+      .crew .hotb { color: var(--blood); background: #3a1512; border: 1px solid var(--blood-deep); border-radius: 2px; font-size: var(--fs-xs); font-weight: 700; padding: 0 3px; letter-spacing: .04em; }
+      .crew .sx { color: var(--muted); font-variant-numeric: tabular-nums; font-size: var(--fs-xs); white-space: nowrap; }
+      .crew .sx i { color: var(--dimc); font-style: normal; font-size: var(--fs-xs); margin: 0 3px 0 1px; }
+      .crew .wpn { font-size: var(--fs-xs); font-weight: 700; letter-spacing: .04em; }
+      .crew .wpn i { color: var(--dimc); font-style: normal; font-weight: 600; font-size: var(--fs-xs); margin-left: 1px; }
+      .crew .st { margin-left: auto; color: var(--muted); font-size: var(--fs-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .crew .acts { margin-left: auto; display: flex; gap: 5px; }
+      /* the selected man's ORDERS panel: labeled buttons that wrap, never overflow */
+      #crewbox .c-detail { margin-top: 4px; padding: 6px 7px 7px; background: #171310; border: 1px solid var(--line-dim); border-radius: 3px; }
+      #crewbox .c-dhead { color: var(--brass); font-size: var(--fs-xs); font-weight: 600; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 5px; }
+      #crewbox .c-dsec { margin-top: 8px; }
+      #crewbox .c-dsec:first-of-type { margin-top: 2px; }
+      #crewbox .c-slbl { color: var(--dimc); font-size: var(--fs-xs); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 3px; }
+      #crewbox .c-dbtns { display: flex; flex-wrap: wrap; gap: 4px; }
+      #crewbox .dbtn { padding: 3px 8px; border: 1px solid var(--line); border-radius: 2px; background: #191510; color: var(--text); font-size: var(--fs-xs); line-height: 1.35; cursor: pointer; white-space: nowrap; }
+      #crewbox .dbtn:hover { background: #242017; border-color: var(--brass-dim); }
+      #crewbox .dbtn.on { border-color: var(--brass); background: #2c2514; color: var(--gold-soft); }
+      #crewbox .dbtn.off { opacity: .38; cursor: default; }
+      #crewbox .dbtn.off:hover { background: #191510; border-color: var(--line); }
+      #crewbox .c-squad { display: flex; flex-wrap: wrap; gap: 3px 6px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line-dim); font-size: var(--fs-xs); color: var(--muted); }
+      #crewbox .sqrow { white-space: nowrap; }
+      #crewbox .sqrow b { font-weight: 700; }
+      #crewbox .sqrow.hurt { color: #b96a72; }
+      #crewbox .sqrow.kit { color: var(--dimc); font-style: italic; }
+      .crew .c-l2 .acts { color: var(--dimc); font-size: var(--fs-xs); }
+      .btns { display: flex; gap: 6px; margin-bottom: 9px; }
+      .btn { flex: 1; text-align: center; padding: 5px 8px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; font-size: var(--fs-sm); background: #191510; color: var(--text); }
+      .btn:hover { background: #211c13; border-color: var(--brass-dim); }
+      .btn.off { opacity: .45; cursor: default; }
+      .btn.hire { border-color: var(--verdigris-deep); color: var(--verdigris); background: #142019; }
+      .btn.hire:hover { background: #1a2c20; }
+      .btn.hire.off { border-color: var(--line); color: var(--muted); background: #191510; }
+      /* the gears, sized like the Paper/Menu row below them: four equal keys spanning the
+         panel, so the block has one edge and the targets are worth clicking at */
+      .speed { display: flex; gap: 5px; align-items: center; }
+      .sbtn { flex: 1; min-width: 2rem; text-align: center; padding: 5px 6px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; font-size: var(--fs-sm); background: #191510; color: var(--text); }
+      .sbtn:hover { background: #211c13; border-color: var(--brass-dim); }
+      .sbtn.on { background: #3a2f18; border-color: var(--brass); color: var(--gold-soft); }
+      /* the keyboard's own highlight. :focus-visible only, so a mouse click never leaves a ring
+         behind; brass rather than the browser's blue, which would be the one un-deco pixel on
+         the whole panel. */
+      #hud [role="button"]:focus-visible, #hud [role="radio"]:focus-visible, #commsbtn:focus-visible {
+        outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 2px;
+      }
+      .hint { min-height: 1.15em; font-size: var(--fs-sm); color: var(--muted); margin-bottom: 4px; }
+      .msg { font-size: var(--fs-sm); color: var(--gold-soft); min-height: 1.15em; }
+      #fedfile { color: var(--blood); }
+      #notofile { color: #e8834a; }
+      #legitfile { color: var(--verdigris); }
+      #dirty { color: #c9a86a; }
+      .btn.on { background: #3a2f18; border-color: var(--brass); color: var(--gold-soft); }
+      /* ZERO CHROME (DESIGN-LENSES §4, the 0 key): the panel and every floating card off, for a
+         clean look at the town. Deliberately NOT the same thing as the bare lens, which takes
+         the marks off the CITY and leaves you playing: Anno ships both, for two different wants.
+         The siren glow and the selection box stay, because they are the world, not the chrome. */
+      body.chromeless #hud, body.chromeless #commsbtn, body.chromeless #bizpanel,
+      body.chromeless #person, body.chromeless #commtoasts, body.chromeless #ctxmenu,
+      body.chromeless #combatAlert { display: none !important; }
+
+      /* --- The morning edition (newspaper overlay) --- */
+      #paper { position: fixed; inset: 0; z-index: 50; background: rgba(6,8,11,.74); display: flex; align-items: flex-start; justify-content: center; overflow: auto; padding: 26px 16px 40px; }
+      #paper.hidden { display: none; }
+      .paper { position: relative; width: 43rem; max-width: 100%; background: #e7dfca; color: #1c1712; border: 1px solid #b3a079; font-family: 'Spectral', Georgia, 'Times New Roman', serif; padding: 22px 26px 18px; }
+      /* the telegram slip laid on the morning edition (main.ts wirenote): a reusable dressing
+         for anything that arrives by wire rather than out of a mouth. It sits IN FLOW at the
+         head of the right column, so it reads as an object dropped on the page (tilted, its
+         own shadow, jutting past the paper's edge) without hiding a word of the paper. It
+         used to be absolute over the masthead and ate the headline (playtest 2026-08-03). */
+      /* sized OFF the column, not in rem: a hair wider than the column whatever the width, so it
+         laps the column rule on the left and hangs off the paper's right edge by the same few
+         millimetres. The translate is visual only, so the overhang costs the flow nothing. */
+      .wirenote { position: relative; z-index: 2; width: calc(100% + 2rem); margin: 4px 0 17px -0.6rem; background: #f0e2ae; color: #241c10; border: 1px solid #8a733f;
+        box-shadow: 0 12px 28px rgba(0,0,0,.4); transform: rotate(2.2deg) translateX(6px); transform-origin: 100% 0; padding: 9px 12px 11px; }
+      /* once the paper itself is squeezed to the window, that overhang would hang past the
+         window and give the overlay a horizontal scrollbar: pull the slip back inside the
+         column. It keeps the tilt and the shadow, which is what sells it as an object. */
+      @media (max-width: 820px) { .wirenote { width: 100%; margin-left: 0; transform: rotate(1.6deg); } }
+      .wirenote .w-mast { font-family: 'Jost', sans-serif; font-size: var(--fs-sm); letter-spacing: .24em; text-align: center; border-bottom: 1px solid #8a733f; padding-bottom: 4px; }
+      .wirenote .w-stamp { font-family: 'Jost', sans-serif; font-size: var(--fs-xs); letter-spacing: .1em; text-align: center; color: #5c4c28; margin: 4px 0 7px; }
+      .wirenote .w-body { font-family: 'Courier New', Courier, monospace; font-weight: 700; font-size: var(--fs-sm); line-height: 1.6; word-spacing: .14em; }
+      .paper .topline, .paper .dateline { display: flex; justify-content: space-between; font-size: var(--fs-xs); letter-spacing: .12em; text-transform: uppercase; }
+      .paper .dateline { justify-content: center; gap: 10px; padding: 5px 0; color: #3a3024; }
+      .paper .mast { font-family: 'UnifrakturMaguntia', Georgia, serif; font-size: var(--fs-5xl); text-align: center; line-height: 1; margin: 3px 0 4px; color: #15110b; }
+      .paper .rule2 { border-top: 3px double #1c1712; margin: 5px 0; }
+      .paper .kick { text-align: center; font-size: var(--fs-sm); letter-spacing: .16em; text-transform: uppercase; color: #6a3a16; margin: 12px 0 2px; }
+      .paper .head { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: var(--fs-4xl); line-height: 1.04; text-align: center; margin: 2px 0 7px; }
+      .paper .deck { font-style: italic; text-align: center; font-size: var(--fs-base); color: #39301f; margin: 0 0 14px; line-height: 1.45; }
+      .paper .cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; }
+      .paper .colR { border-left: 1px solid #6f6041; padding-left: 15px; }
+      /* THE DAILY EDITION (2026-08-12) flows one stream over balanced newspaper columns: the
+         old fixed grid left the right column dead midgame once the classifieds ran dry, while
+         the left column scrolled for screens. The welcome edition keeps the grid above. */
+      .paper .cols.flow { display: block; columns: 2; column-gap: 18px; column-rule: 1px solid #6f6041; }
+      .paper .cols.flow .blot, .paper .cols.flow .ad, .paper .cols.flow .wirenote, .paper .cols.flow .safe { break-inside: avoid; }
+      /* …except the ledger, the one box routinely taller than a column: it breaks between
+         rows like a real paper's tables, never inside one */
+      .paper .cols.flow .blot.longbox { break-inside: auto; }
+      .paper .cols.flow .blot.longbox > div { break-inside: avoid; }
+      .paper .cols.flow .sect { break-after: avoid; }
+      .paper p { margin: 0 0 8px; font-size: var(--fs-sm); line-height: 1.52; text-align: justify; hyphens: auto; }
+      .paper .lede::first-letter { float: left; font-family: 'Playfair Display', serif; font-weight: 900; font-size: var(--fs-5xl); line-height: .78; padding: 3px 7px 0 0; }
+      .paper .sect { font-family: 'Playfair Display', serif; font-weight: 700; font-size: var(--fs-base); letter-spacing: .04em; text-transform: uppercase; text-align: center; border-top: 1px solid #1c1712; border-bottom: 1px solid #1c1712; padding: 3px 0; margin: 2px 0 9px; }
+      .paper .blot { border: 1px solid #1c1712; padding: 8px 10px; margin-top: 10px; }
+      .paper .safe { border-top: 1px solid #1c1712; margin-top: 10px; padding-top: 6px; font-size: var(--fs-sm); font-style: italic; color: #39301f; line-height: 1.45; }
+      .paper .blot b { font-size: var(--fs-xs); letter-spacing: .08em; }
+      .paper .blot p { font-size: var(--fs-sm); margin: 4px 0 0; text-align: left; }
+      .paper .ad { padding: 9px 0; border-bottom: 1px dashed #80714f; }
+      .paper .ad:last-of-type { border-bottom: none; }
+      .paper .ad .role { font-weight: 700; font-size: var(--fs-sm); letter-spacing: .04em; text-transform: uppercase; }
+      .paper .ad .q { font-style: italic; font-size: var(--fs-sm); line-height: 1.45; margin: 3px 0; }
+      .paper .adfoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .paper .ask { font-size: var(--fs-sm); font-variant: small-caps; letter-spacing: .05em; color: #5a3a1c; font-weight: 700; }
+      .paper .take { font-family: 'Spectral', serif; font-size: var(--fs-sm); padding: 3px 10px; border: 1px solid #1c1712; background: #1c1712; color: #e7dfca; border-radius: 0; cursor: pointer; }
+      .paper .take:hover { background: #3a2c1a; }
+      .paper .take:disabled { background: transparent; color: #8a7a55; border-color: #8a7a55; cursor: default; }
+      .paper .none { font-style: italic; font-size: var(--fs-sm); color: #5a4f3a; }
+      /* pinned to the scrollport (2026-08-12): the primary action must never sit five screens
+         of ledger below the fold. Sticky, so at the natural end of the page it sits exactly
+         where it always did; the shadow only reads while it floats over print. */
+      .paper .startday { display: block; width: 100%; margin-top: 16px; padding: 10px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: var(--fs-base); letter-spacing: .02em; background: #1c1712; color: #e7dfca; border: none; cursor: pointer; position: sticky; bottom: 10px; box-shadow: 0 -10px 18px -8px rgba(28,23,18,.5); }
+      .paper .startday:hover { background: #33271a; }
+      .paper .finrow { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-sm); padding: 2px 0; }
+      .paper .finrow .fv { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      /* the witness row carries the picture the police have of him (src/render/portrait.ts).
+         The plate is already cream and already printed, so on the paper it needs no frame of
+         its own: it reads as a photograph pasted into the case file. */
+      .paper .finrow.wit { align-items: flex-start; }
+      .paper .wit-pt { flex: 0 0 auto; width: 2.75rem; height: 3.3rem; display: block;
+        margin: 1px 6px 0 0; border: 1px solid rgba(28,23,18,.35); }
+      .paper .finrow.tot { border-top: 1px solid #1c1712; margin-top: 4px; padding-top: 4px; font-weight: 700; }
+      .paper .finrow.lgr { cursor: pointer; margin: 0 -4px; padding: 2px 4px; }
+      .paper .finrow.lgr:hover { background: rgba(28,23,18,.08); }
+      .paper .finrow.warn, .paper .finrow.warn .fv { color: #7a281a; font-weight: 600; }
+      .paper .finnote { font-style: italic; font-size: var(--fs-sm); color: #5a4f3a; margin-top: 6px; }
+      .obj { font-size: var(--fs-sm); font-weight: 500; color: var(--gold); margin: 2px 0; min-height: 1em; }
+      /* while the chain has a step marker up, the line itself is clickable (glides the camera
+         onto the gold); the hand and the hover say so */
+      .obj.obj-go { cursor: pointer; }
+      .obj.obj-go:hover { text-decoration: underline; text-underline-offset: 2px; }
+      /* the tutorial hint expander, the objective stays one sentence (the WHAT); the ? unfolds
+         the HOW: 2-3 mechanic lines per mission, one uniform shape (copy/missions.ts HOW) */
+      .obj .obj-q { display: inline-block; min-width: 1.15em; text-align: center; margin-left: 4px; border: 1px solid var(--brass-dim); border-radius: 2px; color: var(--gold-soft); font-size: var(--fs-xs); line-height: 1.2; cursor: pointer; user-select: none; }
+      .obj .obj-q:hover { border-color: var(--brass); background: rgba(176,141,63,.12); }
+      .obj-how { margin: 4px 0 6px; padding: 6px 8px; background: var(--ink); border: 1px solid var(--line-dim); border-left: 2px solid var(--brass-dim); border-radius: 2px; font-size: var(--fs-xs); line-height: 1.45; color: var(--muted); }
+      .obj-how.hidden { display: none; }
+      .obj-how .oh-k { color: var(--brass); font-size: var(--fs-xs); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 3px; }
+      .obj-how div { padding: 1px 0; }
+
+      /* --- the business dossier (click a building) --- */
+      /* centered: it's the thing you just asked about, and the top-right corner belongs to
+         the Messages button, a docked dossier sat on top of it */
+      #bizpanel { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(29rem, calc(100vw - 32px)); max-height: calc(100vh - 80px); overflow-y: auto; overflow-x: hidden; z-index: 40; background: rgba(20,16,11,.92); padding: 16px 18px; border-radius: 0; border: 1px solid var(--brass-dim); user-select: none; font-size: var(--fs-sm); box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+      #bizpanel, #bizpanel * { box-sizing: border-box; }
+      #bizpanel.hidden { display: none; }
+
+      /* --- THE ORDER BOOK: the gun shop's catalog, a printed page of iron --- */
+      #guncat { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(26rem, calc(100vw - 32px)); max-height: calc(100vh - 80px); overflow-y: auto; overflow-x: hidden; z-index: 42; background: rgba(20,16,11,.94); padding: 16px 18px; border: 1px solid var(--brass-dim); user-select: none; font-size: var(--fs-sm); box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+      #guncat, #guncat * { box-sizing: border-box; }
+      #guncat.hidden { display: none; }
+      .gc-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line-dim); }
+      .gc-row.off { opacity: .45; }
+      .gc-pic { flex: 0 0 auto; width: 4.6rem; height: 2.2rem; color: #d9cfb4; }
+      .gc-pic svg { width: 100%; height: 100%; display: block; }
+      .gc-body { flex: 1 1 auto; min-width: 0; }
+      .gc-label { color: #efe9d8; }
+      .gc-note { color: var(--muted); font-size: var(--fs-xs); margin-top: 1px; }
+      .gc-qty { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; }
+      .gc-step { width: 1.5rem; height: 1.5rem; line-height: 1.4rem; text-align: center; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; color: var(--text); background: #191510; }
+      .gc-step:hover { background: #211c13; border-color: var(--brass-dim); }
+      .gc-step.off { opacity: .35; cursor: default; }
+      .gc-step.off:hover { background: #191510; border-color: var(--line); }
+      .gc-n { min-width: 1.2rem; text-align: center; color: var(--cream); font-variant-numeric: tabular-nums; }
+      .gc-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 11px; }
+      .gc-total { color: var(--gold-soft); font-variant-numeric: tabular-nums; }
+      .gc-status { color: var(--muted); font-size: var(--fs-xs); margin-top: 8px; }
+
+      /* --- COMMS: the conversation log (portraits reuse the crew fedora bust, tinted per man) --- */
+      .m-badge { display: inline-block; min-width: 1.15em; padding: 0 4px; margin-left: 4px; border-radius: 8px; background: #c8442e; color: #fff; font-size: var(--fs-xs); font-weight: 700; line-height: 1.25; text-align: center; vertical-align: text-top; }
+      .m-badge.hidden { display: none; }
+      /* THE PERSON DOSSIER: his plate at a size worth looking at, his particulars beside it */
+      #person .pe-top { display: flex; gap: 11px; padding: 11px; align-items: flex-start; }
+      #person .pe-pt { flex: 0 0 auto; width: 6.5rem; height: 7.8rem; display: block; border: 1px solid var(--brass-dim); }
+      #person .pe-who { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+      #person .pe-name { color: #efe9d8; font-size: var(--fs-md); }
+      #person .pe-desc { color: var(--muted); font-style: italic; }
+      #person .pe-line { color: #c9c0aa; }
+      #person .pe-saw { margin: 0 11px 11px; padding: 7px 9px; background: #2a1614; border: 1px solid #5c2a24; color: #e7b8ae; }
+      #person .pe-quiet { margin: 0 11px 11px; padding: 7px 9px; background: var(--ink-2); border: 1px solid var(--line); color: var(--muted); }
+      .m-portrait { position: relative; flex: 0 0 auto; width: 3rem; height: 3.6rem; border-radius: 3px; overflow: hidden;
+        background: #14100b; border: 1.5px solid var(--hue); box-shadow: inset 0 0 8px rgba(0,0,0,.4); }
+      /* the wire slip and the faceless street keep the old tinted-silhouette treatment */
+      .m-portrait.wire { background: radial-gradient(120% 90% at 50% 12%, #3a3126, #14100b); }
+      .m-sil { position: absolute; left: 50%; bottom: -1px; transform: translateX(-50%); width: 1.875rem; height: auto; fill: var(--hue); opacity: .92; }
+      /* the history panel */
+      #comms, #commish, #chair, #exits, #parley, #person, #book { position: fixed; right: 14px; top: 14px; width: 23rem; max-height: calc(100vh - 40px); display: flex; flex-direction: column; z-index: 46; background: rgba(20,16,11,.94); border-radius: 0; border: 1px solid var(--brass-dim); user-select: none; }
+      /* each panel needs its OWN #id.hidden: the shared rule above sets `display: flex` on an
+         ID selector, which outranks a bare `.hidden` class. Miss one and the panel is never
+         hidden, it just renders empty. */
+      #comms.hidden, #commish.hidden, #chair.hidden, #exits.hidden, #parley.hidden, #person.hidden, #book.hidden { display: none; }
+      #comms, #comms *, #commish, #commish *, #chair, #chair *, #exits, #exits *, #parley, #parley *, #book, #book * { box-sizing: border-box; }
+      /* THE PERSON DOSSIER SITS LEFT (playtest 2026-08-13: "the message feed overlaps with the
+         selected NPC window"): it shared the top-right corner with the toasts (z 47 over its
+         z 46) and the Messages panel, so a live toast could sit square on the portrait. It
+         docks beside the HUD now (--hud-w is border-box, so the sum is exact) and the right
+         corner belongs to the message traffic alone. On a viewport too narrow for both stacks
+         it falls back to the old right-corner spot rather than covering the HUD. */
+      #person { left: calc(28px + var(--hud-w)); right: auto; }
+      @media (max-width: 1180px) { #person { left: auto; right: 14px; } }
+      /* the black book: the patron directory. Above the paper overlay (z 50) on purpose, its
+         footer button opens it mid-read */
+      #book { width: 25rem; border-color: #6b5a33; z-index: 60; }
+      /* SUCCESSION (session 14): who inherits, who walks, and what it costs, the same furniture as
+         the Commission table, because it is the same kind of reading: named men, priced. */
+      #chair { width: 25rem; border-color: #2b3a4a; }
+      /* the panel states its PREMISE before it states a name (playtest 2026-08-15: "everything
+         below that is really confusing"). Without "say the wagon takes you tomorrow" every number
+         under it is a list of things happening to a stranger, and a first-time reader has no way
+         to tell the heir from the men, or a cost from a consequence. The kickers below (.cm-day,
+         the same furniture the Commission and the paper use) do the rest of the sorting. */
+      .ch-lede { font-size: var(--fs-sm); color: var(--muted); padding: 8px 14px 4px; line-height: 1.45; }
+      /* …and the second line is the misread being ruled out, so it reads dimmer than the event */
+      .ch-not { color: var(--dimc); }
+      /* the heir is not an alarm. He borrowed the Commission's .co-strength, which is salmon
+         because over THERE the strength line is a threat, and it painted your own successor red. */
+      .ch-heir { font-size: var(--fs-sm); color: var(--cream); font-weight: 600; }
+      /* the file FALLS when the chair changes hands: the one line in the cost list that is not a
+         cost, green for the same reason the exits ticks are. */
+      /* …and it needs the id: .co-why is declared further down and would otherwise win on order */
+      #chair .ch-good { color: #8fae8f; }
+      /* the scapegoat is a different verb from succession, and a hairline .co-seat border was not
+         enough edge to say so */
+      .ch-rule { border-top: 2px solid var(--line); margin: 16px 2px 0; }
+      /* a kicker already draws the edge; the first seat under one must not draw a second */
+      .cm-day + .co-seat { border-top: none; }
+      /* THE COMMISSION TABLE (session 13): the coalition, readable seat by seat, who sat down,
+         what he holds against you, what it weighs, and what emptying his chair costs. */
+      #commish { width: 25rem; border-color: #4a2b2b; }
+      /* EXITS, PRICED (session 15): every way the run can end, with its requirements ticked off and a
+         bar for how close each one is. Same furniture a third time, an ending is one more thing the
+         player is entitled to read the rules of. The bar's TRACK shows even at zero, so "no progress"
+         and "no requirement" look different. */
+      #exits { width: 26rem; border-color: #3a3a2b; }
+      /* the sit-down: a table, not a ledger, so it is narrower than the exits board and wears the
+         same warm brass as the Commission it is a cousin of */
+      #parley { width: 24rem; border-color: #4a3a2b; }
+      .ex-ok { color: #8fae8f; }
+      .ex-no { color: #b6a37a; }
+      .ex-bar { height: 3px; background: var(--line-dim); border-radius: 2px; margin: 6px 0 2px; overflow: hidden; }
+      .ex-bar i { display: block; height: 100%; background: #6f8f6f; }
+      .ex-tag { font-size: var(--fs-xs); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); float: right; }
+      .ex-tag.on { color: #a8cba8; }
+      .co-sub { font-size: var(--fs-sm); color: var(--muted); padding: 8px 14px 0; line-height: 1.45; }
+      .co-strength { font-size: var(--fs-sm); color: #ffb0a0; padding: 6px 14px 2px; font-weight: 600; }
+      .co-pulse { font-size: var(--fs-sm); padding: 2px 14px 8px; color: #ff9a7a; }
+      .co-pulse.quiet { color: #8fae8f; }
+      .co-seat { border-top: 1px solid var(--line-dim); padding: 9px 4px 8px; }
+      .co-seat.out { opacity: .45; }
+      .co-name { font-size: var(--fs-sm); color: #f4eede; font-weight: 600; }
+      .co-w { font-size: var(--fs-xs); color: var(--muted); letter-spacing: .04em; margin-left: 6px; }
+      .co-why { font-size: var(--fs-sm); color: #c3bba7; line-height: 1.45; margin: 3px 0 6px; }
+      .co-act { display: inline-block; font-size: var(--fs-sm); padding: 4px 9px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; color: var(--text); margin: 0 5px 4px 0; }
+      .co-act:hover { background: rgba(176,141,63,.14); border-color: var(--brass-dim); }
+      .co-act.off { opacity: .4; cursor: default; }
+      .co-foot { border-top: 1px solid var(--line-dim); font-size: var(--fs-xs); color: var(--muted); padding: 8px 4px 2px; line-height: 1.45; }
+      .cm-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 8px; border-bottom: 1px solid var(--line-dim); }
+      .cm-title { font-family: var(--font-marquee); font-size: var(--fs-base); font-weight: 400; color: var(--cream); letter-spacing: .05em; }
+      .cm-close { cursor: pointer; color: var(--dimc); font-size: var(--fs-lg); padding: 0 3px; line-height: 1; }
+      .cm-close:hover { color: var(--text); }
+      .cm-list { overflow-y: auto; padding: 8px 12px 12px; }
+      .cm-day { font-size: var(--fs-xs); letter-spacing: .16em; text-transform: uppercase; color: var(--brass); margin: 10px 2px 5px; }
+      .cm-day:first-child { margin-top: 2px; }
+      .cm-empty { font-size: var(--fs-sm); color: var(--muted); font-style: italic; padding: 12px 2px; }
+      .cm-row { display: flex; gap: 10px; padding: 8px; border-radius: 3px; margin-bottom: 3px; cursor: default; }
+      .cm-row.ref { cursor: pointer; }
+      .cm-row.ref:hover { background: rgba(176,141,63,.10); }
+      /* LIVE vs SETTLED (main.ts commLive): a line pointing at something still actionable keeps
+         full weight and a brass edge; history dims: readable on hover, quiet otherwise */
+      .cm-row.cm-live { background: rgba(176,141,63,.07); border-left: 2px solid var(--brass); padding-left: 6px; }
+      .cm-row.cm-old { opacity: .42; }
+      .cm-row.cm-old:hover { opacity: .85; }
+      .cm-body { min-width: 0; }
+      .cm-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+      .cm-name { font-size: var(--fs-sm); font-weight: 600; color: #f2ecdc; }
+      .cm-outfit { font-size: var(--fs-xs); color: var(--dimc); }
+      .cm-time { font-size: var(--fs-xs); color: var(--dimc); margin-left: auto; white-space: nowrap; }
+      .cm-text { font-size: var(--fs-sm); line-height: 1.42; color: #d5cdb9; margin-top: 2px; }
+      .cm-go { font-size: var(--fs-xs); color: var(--gold-soft); margin-top: 3px; }
+      /* the pop-in bubble when someone talks to you: bottom-left, above the status line */
+      /* the floating Messages button + the toasts both live in the TOP-RIGHT, the same corner the
+         history panel opens into, one home for everything the men say to you */
+      #commsbtn { position: fixed; right: 14px; top: 14px; z-index: 45; display: flex; align-items: center; gap: 6px; padding: 7px 13px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; font-size: var(--fs-sm); background: rgba(22,18,13,.92); color: var(--text); user-select: none; }
+      #commsbtn:hover { background: rgba(33,28,19,.95); border-color: var(--brass-dim); }
+      #commsbtn.hidden { display: none; }
+      /* THE SIREN GLOW: a red-and-blue wash pinned to the screen edge nearest an off-screen
+         prowl car while it responds or chases, so the law announces itself before it's in
+         frame. Two stacked gradients breathe in counter-phase, the flasher's rhythm. */
+      #sirenglow { position: fixed; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%;
+        pointer-events: none; z-index: 21; mix-blend-mode: screen; filter: blur(4px); }
+      #sirenglow::before, #sirenglow::after { content: ''; position: absolute; inset: 0; border-radius: 50%; }
+      #sirenglow::before { background: radial-gradient(closest-side, rgba(255,64,48,.55), rgba(255,64,48,0) 72%); animation: sirenBreathe .75s ease-in-out infinite alternate; }
+      #sirenglow::after { background: radial-gradient(closest-side, rgba(88,132,255,.55), rgba(88,132,255,0) 72%); animation: sirenBreathe .75s ease-in-out infinite alternate-reverse; }
+      @keyframes sirenBreathe { from { opacity: .95; } to { opacity: .1; } }
+      #commtoasts { position: fixed; right: 14px; top: 56px; width: 23rem; display: flex; flex-direction: column; gap: 8px; z-index: 47; pointer-events: none; }
+      .toast { display: flex; gap: 10px; padding: 10px 11px; border-radius: 3px; background: rgba(24,19,13,.96); border: 1px solid var(--line); box-shadow: 0 6px 22px rgba(0,0,0,.5); pointer-events: auto; cursor: pointer;
+        animation: toastIn .28s cubic-bezier(.2,.9,.3,1.2); border-left: 3px solid var(--hue); }
+      .toast.out { animation: toastOut .3s ease forwards; }
+      .toast .cm-text { color: #e8e1cf; }
+      @keyframes toastIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+      @keyframes toastOut { to { opacity: 0; transform: translateX(16px); } }
+      .bp-head { display: flex; justify-content: space-between; align-items: flex-start; }
+      .bp-name { font-family: var(--font-marquee); font-size: var(--fs-xl); font-weight: 400; color: var(--cream); line-height: 1.25; letter-spacing: .02em; }
+      .bp-close { cursor: pointer; color: var(--dimc); font-size: var(--fs-lg); padding: 0 3px; line-height: 1; }
+      .bp-close:hover { color: #f4eede; }
+      .bp-sub { color: var(--muted); margin: 3px 0 9px; }
+      .bp-chips { display: flex; flex-wrap: wrap; gap: 5px 6px; margin: 0 0 10px; }
+      .bp-chip { font-size: var(--fs-xs); letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; border: 1px solid var(--line); color: var(--muted); }
+      .bp-chip.on { border-color: var(--brass); color: var(--gold-soft); }
+      .bp-chip.alarm { border-color: #a5432c; color: #ff9d8a; }
+      .bp-take { font-size: var(--fs-3xl); color: #f4eede; font-variant-numeric: tabular-nums; margin: 1px 0 5px; }
+      .bp-take .per { font-size: var(--fs-sm); color: var(--muted); }
+      .bp-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line-dim); margin: 10px 0 0; }
+      .bp-tab { padding: 6px 11px 7px; cursor: pointer; color: var(--muted); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .1em; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+      .bp-tab:hover { color: var(--text); }
+      .bp-tab.on { color: var(--gold-soft); border-bottom-color: var(--brass); }
+      .bp-tabdot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-left: 5px; vertical-align: 1px; }
+      .bp-tabdot.alarm { background: #ff5a4a; }
+      .bp-tabdot.warm { background: var(--gold); }
+      .bp-tabbody { padding-top: 2px; }
+      .bp-ledger { border-top: 1px solid var(--line-dim); border-bottom: 1px solid var(--line-dim); padding: 5px 0; margin-bottom: 9px; }
+      .bp-lrow { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; color: var(--muted); }
+      .bp-lrow .v { color: #efe9d8; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .bp-lrow.dim, .bp-lrow.dim .v { color: var(--dimc); }
+      .bp-sect { color: var(--brass); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .14em; margin: 10px 0 5px; }
+      canvas.bp-spark { width: 100%; height: 58px; display: block; background: #12100b; border-radius: 2px; border: 1px solid var(--line-dim); }
+      .bp-mgr { display: flex; align-items: center; gap: 9px; padding: 7px 9px; background: var(--ink-2); border: 1px solid var(--line); border-radius: 3px; }
+      /* his plate: the dossier is the one panel with room for a real one */
+      .bp-mgr .mgr-pt { flex: 0 0 auto; width: 3.75rem; height: 4.5rem; display: block; border-radius: 2px; }
+      .bp-mgr .nm { color: #efe9d8; }
+      .bp-mgr .stars { color: var(--gold); letter-spacing: 1px; }
+      .bp-mgr .st { margin-left: auto; color: var(--muted); font-size: var(--fs-xs); text-align: right; }
+      .bp-mgr.none { border-style: dashed; border-color: #7a5a2a; color: var(--gold-soft); }
+      .bp-meter { height: 7px; border-radius: 2px; background: var(--line-dim); overflow: hidden; margin: 4px 0 6px; }
+      .bp-meter > div { height: 100%; background: linear-gradient(90deg, #b8863a, #ff5a4a); }
+      .bp-btn { display: inline-block; padding: 5px 11px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; background: #191510; color: var(--text); font-size: var(--fs-sm); margin: 3px 6px 3px 0; }
+      .bp-btn:hover { background: #211c13; border-color: var(--brass-dim); }
+      .bp-btn.off { opacity: .45; cursor: default; }
+      .bp-btn.off:hover { background: #191510; border-color: var(--line); }
+      .bp-btn.warm { border-color: var(--verdigris-deep); color: var(--verdigris); background: #142019; }
+      .bp-btn.warm:hover { background: #1a2c20; }
+      .bp-cand { padding: 6px 0 2px; border-top: 1px dashed var(--line-dim); }
+      .bp-cand .q { font-style: italic; color: var(--muted); margin: 2px 0 4px; }
+      .bp-link { color: #d9b86a; cursor: pointer; text-decoration: underline dotted; }
+      .bp-log p { margin: 3px 0; color: var(--muted); line-height: 1.35; }
+      .bp-log .d { color: var(--dimc); font-variant-numeric: tabular-nums; margin-right: 5px; }
+      .bp-log .good { color: #9fd6a8; }
+      .bp-log .bad { color: var(--blood); }
+      #ctxmenu { position: fixed; z-index: 60; min-width: 10rem; background: rgba(18,15,11,.97); border: 1px solid var(--line); border-radius: 3px; padding: 4px; user-select: none; font-size: var(--fs-sm); box-shadow: 0 8px 26px rgba(0,0,0,.5); }
+      #ctxmenu.hidden { display: none; }
+      #ctxmenu .ctx-head { color: var(--muted); font-size: var(--fs-xs); padding: 4px 8px 6px; border-bottom: 1px solid var(--line-dim); margin-bottom: 4px; }
+      #ctxmenu .ctx-item { padding: 6px 10px; border-radius: 2px; cursor: pointer; color: #efe9d8; }
+      #ctxmenu .ctx-item:hover { background: #2c2514; }
+      #ctxmenu .ctx-item.off { opacity: .4; cursor: default; }
+      #ctxmenu .ctx-item.off:hover { background: transparent; }
+      #ctxmenu .ctx-sub { display: block; color: var(--muted); font-size: var(--fs-xs); margin-top: 2px; }
+      #selbox { position: fixed; z-index: 55; border: 1px solid #ffe27a; background: rgba(255,226,122,.12); pointer-events: none; }
+      #selbox.hidden { display: none; }
+      #combatAlert { position: fixed; z-index: 58; left: 50%; top: 64px; transform: translateX(-50%); background: rgba(140,20,20,.92); color: #ffe3e0; border: 1px solid #ff6a5a; border-radius: 8px; padding: 10px 18px; font-size: var(--fs-base); font-weight: 600; letter-spacing: .01em; box-shadow: 0 4px 24px rgba(0,0,0,.5); pointer-events: none; animation: alertpulse 1s ease-in-out infinite; }
+      #combatAlert.hidden { display: none; }
+      @keyframes alertpulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,80,70,.5); } 50% { box-shadow: 0 0 0 8px rgba(255,80,70,0); } }
+
+      /* --- game over (Al is dead) --- */
+      #gameover { position: fixed; inset: 0; z-index: 70; background: rgba(4,5,7,.86); display: flex; align-items: center; justify-content: center; }
+      #gameover.hidden { display: none; }
+      #runend { position: fixed; inset: 0; z-index: 70; background: rgba(4,5,7,.86); display: flex; align-items: center; justify-content: center; }
+      #runend.hidden { display: none; }
+      #runend .go-card { text-align: center; }
+      #runend .re-row { display: flex; justify-content: space-between; padding: 2px 0; }
+      #runend .re-row .v { font-variant-numeric: tabular-nums; font-weight: 700; }
+      #runend .skl { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+      #runend .skl b { font-size: var(--fs-xl); }
+      #runend .skl .plus { width: 1.7rem; height: 1.45rem; line-height: 1.35; border: 1px solid #1c1712; background: #1c1712; color: #e7dfca; cursor: pointer; font-size: var(--fs-base); }
+      #runend .skl .plus.off { opacity: .35; cursor: default; }
+      /* THE TWO SCOREBOARDS (DESIGN-ENDGAME addendum): two big numbers side by side with what
+         each one measured, so the card teaches its own scoring instead of just stating it. */
+      #runend .re-axhead, #runend .re-axfoot { font-size: var(--fs-sm); letter-spacing: .12em; text-transform: uppercase; color: #6a3a16; }
+      /* session 16: the chapters. A run that outlived a boss is not one man's ledger. */
+      #runend .re-chaphead { font-size: var(--fs-sm); letter-spacing: .12em; text-transform: uppercase; color: #6a3a16; margin: 12px 0 2px; border-top: 1px solid #c3b48d; padding-top: 8px; }
+      #runend .re-row.sitting .v { color: #6a3a16; }
+      #runend .re-terms { font-style: italic; font-size: var(--fs-sm); color: #5a4f3a; padding-top: 5px; }
+      #runend .re-axfoot { letter-spacing: 0; text-transform: none; color: #5a4f3a; font-style: italic; margin-top: 8px; }
+      #runend .re-ax { display: grid; grid-template-columns: 62px 1fr; align-items: baseline; gap: 0 10px; text-align: left; margin-top: 8px; }
+      #runend .re-ax .n { font-size: var(--fs-3xl); font-weight: 700; font-variant-numeric: tabular-nums; grid-row: span 2; text-align: right; }
+      #runend .re-ax .l { font-size: var(--fs-base); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+      #runend .re-ax .w { font-size: var(--fs-sm); color: #5a4f3a; line-height: 1.35; }
+      /* the verdict OFFER: the same card furniture as the run-end, but nothing here ends a run */
+      #verdict, #terms { position: fixed; inset: 0; z-index: 70; background: rgba(4,5,7,.86); display: flex; align-items: center; justify-content: center; }
+      #verdict.hidden, #terms.hidden { display: none; }
+      /* the heir's options: one row per thing a man can say he wants, his own record's marked.
+         NOTE the four enumerated `.go-*` rules further down had to learn `#terms` too: they list
+         their panels by id, so a new card renders as dark-on-dark until it is added to all of them
+         (the same shape of trap as the per-panel `.hidden` note above). */
+      #terms .go-card { text-align: center; }
+      #terms .tm-opt { display: block; width: 100%; text-align: left; margin: 8px 0 0; padding: 10px 13px; background: none; border: 1px solid #b3a079; color: #1c1712; font-family: 'Spectral', Georgia, serif; font-size: var(--fs-base); cursor: pointer; }
+      #terms .tm-opt:hover { background: #dcd2b8; }
+      #terms .tm-opt.his { border-color: #6a3a16; border-width: 2px; }
+      #terms .tm-have { display: block; font-size: var(--fs-sm); color: #5a4f3a; margin-top: 3px; }
+      #terms .tm-his { float: right; font-size: var(--fs-xs); letter-spacing: .12em; text-transform: uppercase; color: #6a3a16; }
+      #verdict .go-card { text-align: center; }
+      /* "Not finished yet" is deliberately the quieter control of the two, but it is a real
+         choice, not a dismissal, so it keeps a border and sits on the card, not under it. */
+      #verdict .vd-alt { display: inline-block; margin-top: 10px; padding: 5px 14px; border: 1px solid #b3a079; color: #39301f; font-size: var(--fs-sm); cursor: pointer; }
+      #verdict .vd-alt:hover { background: #dcd2b8; }
+      /* The newspaper-cream card the obituary, the Final Edition and the verdict offer all share.
+         These rules used to be scoped to #gameover alone, so the run-end card, the one the whole
+         endgame lands on, rendered as unstyled system-font text on a transparent background. */
+      #gameover .go-card, #runend .go-card, #verdict .go-card, #terms .go-card { width: 30rem; max-width: 90%; background: #e7dfca; color: #1c1712; border: 1px solid #b3a079; font-family: 'Spectral', Georgia, serif; padding: 26px 30px 22px; text-align: center; }
+      #gameover .go-kick, #runend .go-kick, #verdict .go-kick, #terms .go-kick { font-size: var(--fs-sm); letter-spacing: .16em; text-transform: uppercase; color: #6a3a16; margin-bottom: 8px; }
+      #gameover .go-head, #runend .go-head, #verdict .go-head, #terms .go-head { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: var(--fs-4xl); line-height: 1.05; margin-bottom: 10px; }
+      #gameover .go-deck, #runend .go-deck, #verdict .go-deck, #terms .go-deck { font-style: italic; font-size: var(--fs-base); line-height: 1.5; color: #39301f; margin-bottom: 18px; }
+      #gameover .startday, #runend .startday, #verdict .startday { display: block; width: 100%; margin-top: 16px; padding: 10px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: var(--fs-base); letter-spacing: .02em; background: #1c1712; color: #e7dfca; border: none; cursor: pointer; }
+      #gameover .startday:hover, #runend .startday:hover, #verdict .startday:hover { background: #33271a; }
+      /* the obituary's second door (Main menu) is the quiet one, and a Load with nothing to load is dead */
+      #gameover .startday.ghost { margin-top: 8px; background: transparent; color: #4a3f2c; border: 1px solid #b3a079; font-weight: 400; font-size: var(--fs-sm); }
+      #gameover .startday.ghost:hover { background: rgba(28,23,18,.06); }
+      #gameover .startday:disabled { opacity: .4; cursor: default; background: #1c1712; }
+      /* THE MAILING LIST (src/signup.ts). Deliberately the quietest furniture on either card it
+         appears on: the ask is a ghost button in the menu and a plain underlined line on the
+         run-end card, and the form only exists once he's asked for it. */
+      .su { margin: 10px 0 2px; text-align: center; }
+      .su .su-lede { font-size: var(--fs-sm); color: #5a4f3a; font-style: italic; }
+      .su .su-link { background: none; border: none; padding: 2px 0; font-family: 'Spectral', Georgia, serif; font-size: var(--fs-sm); color: #6a3a16; text-decoration: underline; cursor: pointer; }
+      .su .su-link:hover { color: #8a4a1c; }
+      .su .su-note { font-size: var(--fs-sm); color: #5a4f3a; line-height: 1.4; margin: 8px 0 6px; }
+      .su .su-row { display: flex; gap: 6px; }
+      .su .su-input { flex: 1; min-width: 0; padding: 7px 8px; background: #f2ecdc; border: 1px solid #b3a079; color: #1c1712; font-family: 'Spectral', Georgia, serif; font-size: var(--fs-sm); }
+      .su .su-input:focus { outline: 1px solid #6a3a16; }
+      .su .su-send { padding: 7px 14px; background: #1c1712; color: #e7dfca; border: none; font-family: 'Playfair Display', serif; font-weight: 700; font-size: var(--fs-sm); cursor: pointer; }
+      .su .su-send:hover { background: #33271a; }
+      .su .su-send:disabled, .su .su-input:disabled { opacity: .5; cursor: default; }
+      .su .su-msg { font-size: var(--fs-sm); color: #7a2b18; margin-top: 6px; }
+      .su .su-msg.good { color: #39301f; font-style: italic; }
+      /* the Esc / pause menu, the same newspaper-cream card as the day paper */
+      #menu { position: fixed; inset: 0; z-index: 60; background: rgba(6,8,11,.74); display: flex; align-items: center; justify-content: center; padding: 24px 16px; }
+      #menu.hidden { display: none; }
+      #menu .menu-card { width: 22rem; max-width: 92%; background: #e7dfca; color: #1c1712; border: 1px solid #b3a079; font-family: 'Spectral', Georgia, serif; padding: 22px 26px 24px; }
+      #menu .menu-kick { font-size: var(--fs-sm); letter-spacing: .16em; text-transform: uppercase; color: #6a3a16; text-align: center; }
+      #menu .menu-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: var(--fs-4xl); line-height: 1.05; text-align: center; margin-bottom: 4px; }
+      #menu .menu-sub { text-align: center; font-style: italic; font-size: var(--fs-sm); color: #5a4f3a; margin-bottom: 2px; }
+      /* which town this is. Quieter than the day line, and selectable so it can be copied out */
+      #menu .menu-seed { text-align: center; font-size: var(--fs-xs); letter-spacing: .08em; text-transform: uppercase; color: #8a7c62; margin-bottom: 16px; user-select: text; cursor: text; }
+      #menu .m-btn, #home .m-btn, #setup .m-btn { display: block; width: 100%; margin-top: 8px; padding: 10px; font-family: 'Playfair Display', serif; font-weight: 700; font-size: var(--fs-base); letter-spacing: .02em; background: #1c1712; color: #e7dfca; border: none; cursor: pointer; text-align: center; }
+      #menu .m-btn:hover, #home .m-btn:hover, #setup .m-btn:hover { background: #33271a; }
+      #menu .m-btn.ghost, #home .m-btn.ghost, #setup .m-btn.ghost { background: transparent; color: #4a3f2c; border: 1px solid #b3a079; font-weight: 400; font-size: var(--fs-sm); }
+      #menu .m-btn.ghost:hover, #home .m-btn.ghost:hover, #setup .m-btn.ghost:hover { background: rgba(28,23,18,.06); }
+      /* the one loud button on a card, the action you almost certainly came for */
+      #menu .m-btn.primary, #home .m-btn.primary, #setup .m-btn.primary { background: #5e1f14; }
+      #menu .m-btn.primary:hover, #home .m-btn.primary:hover, #setup .m-btn.primary:hover { background: #7a281a; }
+      #menu .m-btn:disabled { opacity: .4; cursor: default; }
+      #menu .m-btn:disabled:hover { background: #1c1712; }
+      #menu .m-sect, #home .m-sect { font-size: var(--fs-xs); letter-spacing: .14em; text-transform: uppercase; color: #6a3a16; margin: 16px 0 4px; }
+      #menu .m-note, #home .m-note, #setup .m-note { font-size: var(--fs-sm); font-style: italic; line-height: 1.5; color: #5a4f3a; margin: 4px 0 8px; }
+      /* Load list: one row per save, day + snapshot of the take. The desk shows the same list
+         (main.ts renderHome), so every rule here is written for both cards. */
+      #menu .save-row, #home .save-row { display: flex; align-items: baseline; gap: 8px; width: 100%; margin-top: 6px; padding: 8px 10px; background: #f2ecda; border: 1px solid #cdbe97; cursor: pointer; text-align: left; color: #1c1712; font-family: 'Spectral', Georgia, serif; }
+      #menu .save-row:hover, #home .save-row:hover { background: #fff8e6; border-color: #b3a079; }
+      #menu .save-row.stale, #home .save-row.stale { opacity: .55; cursor: default; }
+      #menu .save-row.stale:hover, #home .save-row.stale:hover { background: #f2ecda; border-color: #cdbe97; }
+      #menu .save-row .sr-day, #home .save-row .sr-day { font-weight: 700; font-size: var(--fs-base); }
+      #menu .save-row .sr-meta, #home .save-row .sr-meta { font-size: var(--fs-sm); color: #5a4f3a; }
+      #menu .save-row .sr-tag, #home .save-row .sr-tag { margin-left: auto; font-size: var(--fs-xs); letter-spacing: .1em; text-transform: uppercase; color: #6a3a16; white-space: nowrap; }
+      /* a save row plus its rename / delete buttons sit on one line */
+      #menu .save-row-wrap, #home .save-row-wrap { display: flex; align-items: stretch; gap: 4px; margin-top: 6px; }
+      #menu .save-row-wrap .save-row, #home .save-row-wrap .save-row { margin-top: 0; flex: 1; min-width: 0; }
+      #menu .save-row-wrap .sr-meta, #home .save-row-wrap .sr-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #menu .save-act, #home .save-act { flex: 0 0 auto; width: 2rem; background: #f2ecda; border: 1px solid #cdbe97; color: #6a3a16; cursor: pointer; font-size: var(--fs-base); line-height: 1; font-family: 'Spectral', Georgia, serif; }
+      #menu .save-act:hover, #home .save-act:hover { background: #fff8e6; border-color: #b3a079; }
+      #menu .save-act.del:hover, #home .save-act.del:hover { background: #f4dfd8; border-color: #a5563f; color: #7a281a; }
+      /* Settings: the interface-size slider, five stops, an ink block on a brass rule.
+         Native range chrome would read as a browser control on a 1929 letterhead. */
+      #menu .slide-row { display: flex; align-items: baseline; gap: 10px; margin: 10px 0 0; }
+      #menu .slide-row .slide-lbl { flex: 1; font-size: var(--fs-sm); }
+      #menu .slide-row .slide-val { font-weight: 700; font-size: var(--fs-sm); color: #3a2f1c; font-variant-numeric: tabular-nums; }
+      #menu .slider { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 1.4rem; margin: 0; background: transparent; cursor: pointer; }
+      #menu .slider:focus { outline: none; }
+      #menu .slider::-webkit-slider-runnable-track { height: 2px; background: #b3a079; }
+      #menu .slider::-moz-range-track { height: 2px; background: #b3a079; }
+      #menu .slider::-webkit-slider-thumb { -webkit-appearance: none; width: .8rem; height: 1.15rem; margin-top: -.57rem; background: #1c1712; border: none; border-radius: 0; }
+      #menu .slider::-moz-range-thumb { width: .8rem; height: 1.15rem; background: #1c1712; border: none; border-radius: 0; }
+      #menu .slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px #6a3a16; }
+      #menu .slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px #6a3a16; }
+      #menu .slide-ends { display: flex; justify-content: space-between; font-size: var(--fs-xs); letter-spacing: .12em; text-transform: uppercase; color: #6a3a16; }
+      #menu .m-rule { border-top: 1px solid #d8ccaa; margin: 18px 0 12px; }
+      /* Settings stepper */
+      #menu .step-row { display: flex; align-items: center; gap: 10px; margin: 6px 0 2px; }
+      #menu .step-row .step-lbl { font-size: var(--fs-sm); flex: 1; }
+      #menu .step-row .step-btn { width: 1.85rem; height: 1.85rem; line-height: 1.75; text-align: center; background: #1c1712; color: #e7dfca; border: none; cursor: pointer; font-size: var(--fs-lg); font-family: 'Playfair Display', serif; }
+      #menu .step-row .step-btn:hover { background: #33271a; }
+      #menu .step-row .step-btn:disabled { opacity: .35; cursor: default; }
+      #menu .step-row .step-val { min-width: 1.75rem; text-align: center; font-weight: 700; font-size: var(--fs-base); font-variant-numeric: tabular-nums; }
+      /* Controls reference */
+      #menu .ctl-row { display: flex; gap: 10px; padding: 4px 0; border-bottom: 1px solid #d8ccaa; font-size: var(--fs-sm); }
+      #menu .ctl-row:last-child { border-bottom: none; }
+      #menu .ctl-row .ctl-key { flex: none; width: 118px; font-weight: 700; color: #3a2f1c; }
+      #menu .ctl-row .ctl-act { color: #4a3f2c; }
+
+      /* --- the home screen: the boss's desk, seen from the boss's chair ------------------
+         Pure CSS scenery: lamplight from above, wood grain, a leather blotter, and the
+         night's paperwork. Shown once, on page load, over everything (z above every modal). */
+      #home { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 24px 16px; user-select: none;
+        background:
+          radial-gradient(75% 60% at 50% 0%, rgba(255,192,112,.17), rgba(255,192,112,0) 62%),
+          repeating-linear-gradient(94deg, rgba(0,0,0,.15) 0 2px, rgba(0,0,0,0) 2px 9px, rgba(255,255,255,.02) 9px 11px, rgba(0,0,0,0) 11px 31px),
+          linear-gradient(160deg, #3c2415 0%, #2b1a0e 55%, #1c1007 100%); }
+      #home::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 100% at 50% 42%, rgba(0,0,0,0) 52%, rgba(0,0,0,.6) 100%); }
+      #home.hidden { display: none; }
+      /* the 3D desk (render/deskScene.ts) draws under the DOM blotter; the CSS wood above is its no-WebGL fallback */
+      #home .desk3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+      #home .blotter { position: relative; display: flex; align-items: center; justify-content: center; padding: 42px 52px 46px;
+        background: linear-gradient(165deg, #22392b, #152418); border: 1px solid #0d160f; border-radius: 3px;
+        box-shadow: inset 0 0 46px rgba(0,0,0,.55), 0 24px 60px rgba(0,0,0,.55); }
+      #home .blotter .bc { position: absolute; width: 24px; height: 24px; border: 3px solid #8a6f3a; opacity: .85; }
+      #home .bc-tl { left: -2px; top: -2px; border-right: none; border-bottom: none; }
+      #home .bc-tr { right: -2px; top: -2px; border-left: none; border-bottom: none; }
+      #home .bc-bl { left: -2px; bottom: -2px; border-right: none; border-top: none; }
+      #home .bc-br { right: -2px; bottom: -2px; border-left: none; border-top: none; }
+      /* a second sheet askew under the letterhead, a desk is never one tidy page */
+      #home .under-sheet { position: absolute; width: 21.5rem; max-width: 84vw; height: 78%; background: #d6cbae; border: 1px solid #b3a079; transform: rotate(1.8deg); box-shadow: 0 4px 12px rgba(0,0,0,.35); }
+      /* the letterhead scrolls rather than growing off the desk: the Load list is as long as the
+         player's saves are, and eighty of them still has to sit on one blotter */
+      #home .home-card { position: relative; width: 22rem; max-width: 86vw; max-height: 76vh; overflow-y: auto; background: #e7dfca; color: #1c1712; border: 1px solid #b3a079; font-family: 'Spectral', Georgia, serif; padding: 26px 30px 28px; box-shadow: 0 10px 26px rgba(0,0,0,.5); transform: rotate(-.7deg); }
+      #home .home-kick { font-size: var(--fs-sm); letter-spacing: .16em; text-transform: uppercase; color: #6a3a16; text-align: center; }
+      #home .home-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: var(--fs-5xl); line-height: 1.02; text-align: center; margin-bottom: 4px; }
+      #home .home-tag { text-align: center; font-style: italic; font-size: var(--fs-sm); color: #5a4f3a; margin-bottom: 18px; }
+
+      /* --- the new-game screen: the plan of the city -------------------------------------
+         Between the desk and the first morning. It goes over whatever called it, the desk on
+         a fresh load, the paused city from the pause menu, so it carries a scrim of its own
+         rather than a background, and the desk lamp still shows through behind the plate. */
+      #setup { position: fixed; inset: 0; z-index: 85; display: flex; align-items: center; justify-content: center; padding: 20px 16px; user-select: none;
+        background: radial-gradient(95% 80% at 50% 40%, rgba(22,13,6,.80), rgba(7,4,2,.94)); }
+      #setup.hidden { display: none; }
+      #setup .setup-card { position: relative; width: 27.5rem; max-width: 92vw; max-height: 94vh; overflow-y: auto; background: #e7dfca; color: #1c1712; border: 1px solid #b3a079;
+        font-family: 'Spectral', Georgia, serif; padding: 20px 24px 22px; box-shadow: 0 14px 36px rgba(0,0,0,.6); }
+      #setup .setup-kick { font-size: var(--fs-sm); letter-spacing: .16em; text-transform: uppercase; color: #6a3a16; text-align: center; }
+      #setup .setup-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: var(--fs-4xl); line-height: 1.05; text-align: center; margin-bottom: 10px; }
+      /* The plate itself, render/mapPreview.ts draws the plat onto this. Square, and bounded by
+         the WINDOW's height as well as the card's width, so the whole card still fits on a short
+         laptop screen without the buttons falling off the bottom of it. */
+      #setup .setup-map { display: block; width: min(100%, 46vh); aspect-ratio: 1 / 1; margin: 0 auto; border: 1px solid #b3a079; background: #ded3b4; box-shadow: inset 0 0 18px rgba(58,47,29,.18); }
+      #setup .setup-town { text-align: center; font-size: var(--fs-sm); font-style: italic; color: #5a4f3a; margin: 9px 0 2px; min-height: 1.2em; }
+      /* the seed line: the number this city was built from, and a way back to one you liked */
+      #setup .setup-seed { display: flex; align-items: center; gap: 9px; margin-top: 12px; }
+      #setup .setup-seed label { font-size: var(--fs-xs); letter-spacing: .14em; text-transform: uppercase; color: #6a3a16; }
+      #setup .setup-seed input { flex: 1; min-width: 0; font-family: 'Spectral', Georgia, serif; font-size: var(--fs-base); padding: 7px 9px;
+        background: #f2ecda; color: #1c1712; border: 1px solid #b3a079; }
+      #setup .setup-seed input:focus { outline: none; border-color: #6a3a16; background: #fff8e6; }
+      /* a short window (a laptop with the browser chrome eating the top): pull the card in tight
+         rather than hand the player a scrollbar on a screen that is mostly one picture */
+      /* …and an enlarged interface reaches the same place on a taller screen, so the two larger
+         settings (html[data-ui="big"], written by main.ts) tighten sooner. */
+      @media (max-height: 640px) {
+        #setup .setup-card { padding: 14px 20px 16px; }
+        #setup .setup-title { font-size: var(--fs-3xl); margin-bottom: 6px; }
+        #setup .m-btn { margin-top: 6px; padding: 7px; font-size: var(--fs-base); }
+        #setup .setup-seed { margin-top: 8px; }
+        #setup .m-note { margin: 3px 0 5px; }
+      }
+      @media (max-height: 820px) {
+        html[data-ui="big"] #setup .setup-card { padding: 14px 20px 16px; }
+        html[data-ui="big"] #setup .setup-title { font-size: var(--fs-3xl); margin-bottom: 6px; }
+        html[data-ui="big"] #setup .m-btn { margin-top: 6px; padding: 7px; font-size: var(--fs-base); }
+        html[data-ui="big"] #setup .setup-seed { margin-top: 8px; }
+        html[data-ui="big"] #setup .m-note { margin: 3px 0 5px; }
+        html[data-ui="big"] #setup .setup-map { width: min(100%, 40vh); }
+      }
+    </style>
+    <script type="module" crossorigin src="/games/capone/assets/index-Q7wpV9UU.js"></script>
+    <link rel="stylesheet" crossorigin href="/games/capone/assets/index-KMOgOAZl.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hud">
+      <div class="cashrow" id="cashrow">
+        <span id="money">$0</span>
+        <span class="cashcaret" id="cashcaret">&#9662;</span>
+      </div>
+      <div class="books hidden" id="books">
+        <div class="stats">
+          <div><span class="k">Income</span><span id="inc">$0</span></div>
+          <div><span class="k">Payroll</span><span id="pay">$0</span></div>
+          <div><span class="k">Dirty</span><span id="dirty">$0</span></div>
+          <div><span class="k">Doors</span><span id="owned">0</span></div>
+          <div><span class="k">Standing</span><span id="legitfile" title="">0%</span></div>
+          <div id="favorrow"><span class="k">Favor</span><span id="favor">0</span></div>
+        </div>
+        <div class="btns" id="civicbtns">
+          <div class="btn" id="civic0"></div>
+          <div class="btn" id="civic1"></div>
+          <div class="btn" id="civic2"></div>
+        </div>
+        <div class="btns" id="seatbtns">
+          <div class="btn" id="seat0"></div>
+          <div class="btn" id="seat1"></div>
+          <div class="btn" id="seat2"></div>
+        </div>
+      </div>
+      <div class="timebox">
+        <div class="dayrow">
+          <span class="k">Day</span><span id="day">1</span>
+          <svg class="sunarc" viewBox="0 0 96 24" aria-hidden="true">
+            <title id="arctitle"></title>
+            <rect id="arcsky" x="0" y="0" width="96" height="22" rx="5" fill="#0b0f14"/>
+            <line class="sa-hz" x1="4" y1="17" x2="92" y2="17"/>
+            <path class="sa-arc" d="M8 17 Q48 -8 88 17" fill="none"/>
+            <line class="sa-tick" x1="48" y1="16" x2="48" y2="18.5"/>
+            <line class="sa-tick" x1="8" y1="16" x2="8" y2="18.5"/>
+            <line class="sa-tick" x1="88" y1="16" x2="88" y2="18.5"/>
+            <g id="sunicon" fill="#ffd24a" transform="translate(8 17)">
+              <circle r="2.9"/>
+              <path d="M-6.1 -0.5 h2 v1 h-2 z M4.1 -0.5 h2 v1 h-2 z M-0.5 -6.1 h1 v2 h-1 z M-0.5 4.1 h1 v2 h-1 z M-4.4 -3.7 l1.4 1.4 -0.7 0.7 -1.4 -1.4 z M3 3 l1.4 1.4 -0.7 0.7 -1.4 -1.4 z M3.7 -4.4 l0.7 0.7 -1.4 1.4 -0.7 -0.7 z M-3 3.7 l0.7 -0.7 1.4 1.4 -0.7 0.7 z"/>
+            </g>
+            <g id="moonicon" transform="translate(8 17)" style="display:none">
+              <path d="M 1.6 -3.2 A 3.7 3.7 0 1 0 1.6 3.2 A 3 3 0 1 1 1.6 -3.2 Z" fill="#d3dcef"/>
+            </g>
+          </svg>
+        </div>
+        <div class="speed" id="speed" role="radiogroup">
+          <div class="sbtn" data-s="0" role="radio" aria-checked="false" tabindex="-1">&#10074;&#10074;</div>
+          <div class="sbtn" data-s="1" role="radio" aria-checked="false" tabindex="-1">&#9654;</div>
+          <div class="sbtn" data-s="2" role="radio" aria-checked="false" tabindex="-1">&#9654;&#9654;</div>
+          <div class="sbtn" data-s="3" role="radio" aria-checked="false" tabindex="-1">&#9654;&#9654;&#9654;</div>
+        </div>
+        <div id="nightgov" class="nightgov" style="display:none"></div>
+      </div>
+      <div class="stats">
+        <div id="notorow" style="display:none"><span class="k">Notoriety</span><span id="notofile" title="">0%</span></div>
+        <div id="fedrow" style="display:none"><span class="k">The File</span><span id="fedfile" title="">0%</span></div>
+      </div>
+      <div class="btns" id="fedbtns" style="display:none">
+        <div class="btn" id="lawyerbtn">Counsel</div>
+        <div class="btn" id="jurybtn">Jury</div>
+        <div class="btn" id="retirebtn">Retire</div>
+      </div>
+      <div class="btns" id="epibtns" style="display:none">
+        <div class="btn" id="epiloguebtn"></div>
+      </div>
+      <div class="btns" id="untbtns" style="display:none">
+        <div class="btn" id="untouchablebtn"></div>
+      </div>
+      <div class="btns" id="commbtns" style="display:none">
+        <div class="btn" id="commissionbtn"></div>
+      </div>
+      <div class="btns" id="chairbtns" style="display:none">
+        <div class="btn" id="chairbtn"></div>
+      </div>
+      <div class="btns" id="exitbtns" style="display:none">
+        <div class="btn" id="exitsbtn"></div>
+      </div>
+      <div class="crewhead">Crew <span class="pr" id="crewprompt"></span></div>
+      <div id="crewbox">
+        <div class="crew" id="crew"></div>
+        <div id="crewdetail"></div>
+      </div>
+      <!-- the dial (DESIGN-LENSES.md): the chips are written by main.ts from copy/ui.ts, and the
+           row is always here, so the player learns the control once instead of watching a
+           button appear at the vouch -->
+      <div class="btns" id="lensrow" role="radiogroup"></div>
+      <div class="btns">
+        <div class="btn" id="paperbtn"></div>
+        <div class="btn" id="bookbtn"></div>
+        <div class="btn" id="menubtn"></div>
+      </div>
+      <div class="hint" id="hover"></div>
+      <div class="obj" id="objective"></div>
+      <div class="obj-how hidden" id="objhow"></div>
+      <div id="loghist" class="hidden"></div>
+      <div class="logrow" id="logrow">
+        <span class="msg" id="msg"></span>
+        <span class="logcaret" id="logcaret">&#9652;</span>
+      </div>
+    </div>
+    <div id="bizpanel" class="hidden"></div>
+    <div id="guncat" class="hidden"></div>
+    <div id="commsbtn"><span id="commsbtnlabel"></span><span class="m-badge hidden" id="commsbadge">0</span></div>
+    <div id="person" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="pe-title"></span><span class="cm-close" id="personclose">&times;</span></div>
+      <div class="cm-list" id="pe-body"></div>
+    </div>
+    <div id="comms" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="commstitle"></span><span class="cm-close" id="commsclose">&times;</span></div>
+      <div class="cm-list" id="commslist"></div>
+    </div>
+    <div id="commish" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="co-title"></span><span class="cm-close" id="commishclose">&times;</span></div>
+      <div class="co-strength" id="co-strength" title=""></div>
+      <div class="co-pulse" id="co-pulse"></div>
+      <div class="cm-list" id="co-list"></div>
+    </div>
+    <div id="book" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="bk-title"></span><span class="cm-close" id="bookclose">&times;</span></div>
+      <div class="cm-list" id="bk-list"></div>
+    </div>
+    <div id="chair" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="ch-title"></span><span class="cm-close" id="chairclose">&times;</span></div>
+      <div class="ch-lede" id="ch-lede"></div>
+      <div class="cm-list" id="ch-list"></div>
+    </div>
+    <div id="exits" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="ex-title"></span><span class="cm-close" id="exitsclose">&times;</span></div>
+      <div class="co-pulse quiet" id="ex-blurb"></div>
+      <div class="cm-list" id="ex-list"></div>
+    </div>
+    <div id="parley" class="hidden">
+      <div class="cm-head"><span class="cm-title" id="pl-title"></span><span class="cm-close" id="parleyclose">&times;</span></div>
+      <div class="co-pulse quiet" id="pl-when"></div>
+      <div class="cm-list" id="pl-list"></div>
+    </div>
+    <div id="commtoasts"></div>
+    <div id="sirenglow" style="display:none"></div>
+    <div id="ctxmenu" class="hidden"></div>
+    <div id="selbox" class="hidden"></div>
+    <div id="combatAlert" class="hidden"></div>
+    <div id="gameover" class="hidden">
+      <div class="go-card">
+        <div class="go-kick" id="go-kick"></div>
+        <div class="go-head" id="go-head"></div>
+        <div class="go-deck" id="go-deck"></div>
+        <button class="startday" id="go-load"></button>
+        <button class="startday ghost" id="go-menu"></button>
+      </div>
+    </div>
+    <div id="runend" class="hidden">
+      <div class="go-card" style="width:33rem">
+        <div class="go-kick" id="re-kick"></div>
+        <div class="go-head" id="re-head"></div>
+        <div class="go-deck" id="re-deck"></div>
+        <div id="re-score" style="text-align:left;font-size:var(--fs-base);margin:0 auto 14px;max-width:340px"></div>
+        <div id="re-axes" style="margin:0 auto 14px;max-width:380px"></div>
+        <div style="font-size:var(--fs-sm);letter-spacing:.12em;text-transform:uppercase;color:#6a3a16;margin-bottom:6px" id="re-skillhead"></div>
+        <div id="re-skill" style="display:flex;justify-content:center;gap:18px;margin-bottom:6px;font-size:var(--fs-base)"></div>
+        <div id="re-pts" style="font-size:var(--fs-sm);color:#5a4f3a;margin-bottom:14px"></div>
+        <div id="re-mail"></div>
+        <button class="startday" id="re-next"></button>
+      </div>
+    </div>
+    <div id="verdict" class="hidden">
+      <div class="go-card" style="width:33rem">
+        <div class="go-kick" id="vd-kick"></div>
+        <div class="go-head" id="vd-head"></div>
+        <div class="go-deck" id="vd-deck"></div>
+        <div id="vd-axes" style="font-size:var(--fs-base);margin:0 auto 16px"></div>
+        <button class="startday" id="vd-take"></button>
+        <div><span class="vd-alt" id="vd-stay"></span></div>
+        <div id="vd-note" style="font-size:var(--fs-sm);color:#5a4f3a;margin-top:10px"></div>
+      </div>
+    </div>
+    <!-- THE TERMS (session 16): the morning a new man takes the desk, he names what the run is for.
+         Same card furniture as the verdict offer, and deliberately so: these are the two moments
+         the game stops and asks the player what he wants, rather than telling him. -->
+    <div id="terms" class="hidden">
+      <div class="go-card" style="width:31rem">
+        <div class="go-kick" id="tm-kick"></div>
+        <div class="go-head" id="tm-head"></div>
+        <div class="go-deck" id="tm-deck"></div>
+        <div id="tm-opts"></div>
+      </div>
+    </div>
+    <div id="menu" class="hidden">
+      <div class="menu-card">
+        <div class="menu-kick" id="menukick"></div>
+        <div class="menu-title" id="menutitle"></div>
+        <div class="menu-body" id="menubody"></div>
+      </div>
+    </div>
+    <div id="paper" class="hidden">
+      <div class="paper">
+        <div id="paperbody"></div>
+        <button class="startday" id="startday"></button>
+      </div>
+    </div>
+    <div id="home">
+      <canvas class="desk3d"></canvas>
+      <div class="blotter">
+        <i class="bc bc-tl"></i><i class="bc bc-tr"></i><i class="bc bc-bl"></i><i class="bc bc-br"></i>
+        <div class="under-sheet"></div>
+        <div class="home-card">
+          <div class="home-kick" id="homekick"></div>
+          <div class="home-title" id="hometitle"></div>
+          <div class="home-tag" id="hometag"></div>
+          <div id="homebody"></div>
+        </div>
+      </div>
+    </div>
+    <div id="setup" class="hidden">
+      <div class="setup-card">
+        <div class="setup-kick" id="setupkick"></div>
+        <div class="setup-title" id="setuptitle"></div>
+        <canvas class="setup-map" id="setupmap"></canvas>
+        <div class="setup-town" id="setuptown"></div>
+        <div id="setupbody"></div>
+      </div>
+    </div>
+  </body>
+</html>
