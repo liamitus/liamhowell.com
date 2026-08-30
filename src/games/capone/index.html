@@ -354,6 +354,13 @@
       #person .pe-line { color: #c9c0aa; }
       #person .pe-saw { margin: 0 11px 11px; padding: 7px 9px; background: #2a1614; border: 1px solid #5c2a24; color: #e7b8ae; }
       #person .pe-quiet { margin: 0 11px 11px; padding: 7px 9px; background: var(--ink-2); border: 1px solid var(--line); color: var(--muted); }
+      /* THE WORD: the terms, and the line under them that says who is watching */
+      #person .pe-acts { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 11px 6px; }
+      #person .pe-acts .dbtn { padding: 3px 8px; border: 1px solid var(--line); border-radius: 2px; background: #191510; color: var(--text); font-size: var(--fs-xs); line-height: 1.35; cursor: pointer; white-space: nowrap; }
+      #person .pe-acts .dbtn:hover { background: #242017; border-color: var(--brass-dim); }
+      #person .pe-acts .dbtn.off { opacity: .38; cursor: default; }
+      #person .pe-acts .dbtn.off:hover { background: #191510; border-color: var(--line); }
+      #person .pe-note { margin: 0 11px 11px; color: var(--dimc); font-size: var(--fs-xs); }
       .m-portrait { position: relative; flex: 0 0 auto; width: 3rem; height: 3.6rem; border-radius: 3px; overflow: hidden;
         background: #14100b; border: 1.5px solid var(--hue); box-shadow: inset 0 0 8px rgba(0,0,0,.4); }
       /* the wire slip and the faceless street keep the old tinted-silhouette treatment */
@@ -742,7 +749,7 @@
         html[data-ui="big"] #setup .setup-map { width: min(100%, 40vh); }
       }
     </style>
-    <script type="module" crossorigin src="/games/capone/assets/index-VY6_PO8U.js"></script>
+    <script type="module" crossorigin src="/games/capone/assets/index-CLlUSLcj.js"></script>
     <link rel="stylesheet" crossorigin href="/games/capone/assets/index-KMOgOAZl.css">
   </head>
   <body>
