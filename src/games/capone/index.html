@@ -55,7 +55,20 @@
       /* the panel is a column that grows (crew, orders, the objective, the tutorial's HOW) and
          at the larger interface sizes (or on a short laptop) it would run off the bottom of the
          screen with the Menu button on it. Cap it to the window and let it scroll instead. */
-      #hud { position: fixed; left: 14px; top: 14px; box-sizing: border-box; width: var(--hud-w); max-height: calc(100vh - 28px); overflow-y: auto; overflow-x: hidden; background: rgba(20,16,11,.88); padding: .8rem .95rem; border: 1px solid var(--brass-dim); user-select: none; box-shadow: 0 10px 34px rgba(0,0,0,.45); scrollbar-width: thin; scrollbar-color: var(--brass-dim) transparent; }
+      /* THE FOOT IS NOT PART OF THE SCROLL. The hover line is written by pointermove over the
+         city, so it can only be read while the cursor is still ON the thing it describes: the
+         moment the panel's foot went below the fold, reading a job meant travelling the cursor
+         across town to the scrollbar, and every building it crossed on the way rewrote the line
+         it went to fetch (playtest 2026-08-30: "it's below the scroll, but if I move my mouse
+         over to scroll then it goes away"). So #hud is a column that hands its scrolling to
+         #hudbody and keeps #hudfoot pinned: whatever the chrome above has grown to, the hover
+         line, the objective and the log strip are on screen at the moment the cursor is on the
+         city. #hud's own overflow stays as the backstop for a window too short even for those. */
+      #hud { position: fixed; left: 14px; top: 14px; box-sizing: border-box; width: var(--hud-w); max-height: calc(100vh - 28px); display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; background: rgba(20,16,11,.88); padding: .8rem .95rem; border: 1px solid var(--brass-dim); user-select: none; box-shadow: 0 10px 34px rgba(0,0,0,.45); scrollbar-width: thin; scrollbar-color: var(--brass-dim) transparent; }
+      /* the body yields height to the foot, never the other way round, but keeps a floor so a
+         short window costs you the tail of the crew list rather than the whole panel */
+      #hudbody { flex: 0 1 auto; min-height: 5rem; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--brass-dim) transparent; }
+      #hudfoot { flex: none; }
       #hud::before { content: ''; position: absolute; inset: 3px; border: 1px solid var(--brass-faint); pointer-events: none; }
       #hud b { color: #f4eede; font-weight: 600; font-size: var(--fs-base); }
       .dim { color: var(--dimc); font-size: var(--fs-sm); }
@@ -105,7 +118,9 @@
       .logrow .msg { flex: 1; min-width: 0; }
       .logcaret { color: var(--brass-dim); font-size: var(--fs-xs); flex: none; }
       .logrow:hover .logcaret { color: var(--gold-soft); }
-      #loghist { max-height: 180px; overflow-y: auto; margin: 4px 0 6px; padding: 6px 8px; background: var(--ink); border: 1px solid var(--line-dim); border-radius: 2px; font-size: var(--fs-sm); }
+      /* the vh half of the cap is because this box sits in the pinned foot: on a short window a
+         flat 180px of log would be most of the panel, and it would take it from the crew */
+      #loghist { max-height: min(180px, 28vh); overflow-y: auto; margin: 4px 0 6px; padding: 6px 8px; background: var(--ink); border: 1px solid var(--line-dim); border-radius: 2px; font-size: var(--fs-sm); }
       #loghist.hidden { display: none; }
       .lg-row { color: var(--muted); padding: 2px 0; line-height: 1.35; }
       .lg-row:first-child { color: var(--gold-soft); }
@@ -121,8 +136,10 @@
          orders panel deliberately sits OUTSIDE the scroller (see updateCrewHud). */
       /* The box gets a height budget; the two things inside it share it out. The cap is what is
          left of the window once the fixed chrome is accounted for: the cash line and the clock
-         above, and the Paper/Menu row, the hover line, the objective and the log strip below,
-         which is about 26rem of the panel and grows with the interface size because it is rem.
+         above, and the Paper/Menu row below, which is about 26rem of the panel and grows with
+         the interface size because it is rem. It is a budget for the LENS AND PAPER ROWS, which
+         still ride the scroll: the foot below them is pinned (see #hudfoot) and no longer
+         depends on this number being a good guess.
          Inside, the card list is the flexible one and the selected man's orders are not, so
          opening a man's orders takes height FROM the list rather than pushing the panel's foot
          off the screen. Each keeps a floor and its own scrollbar, so nothing can be squeezed to
@@ -192,6 +209,18 @@
       #crewbox .sqrow.kit { color: var(--dimc); font-style: italic; }
       .crew .c-l2 .acts { color: var(--dimc); font-size: var(--fs-xs); }
       .btns { display: flex; gap: 6px; margin-bottom: 9px; }
+      /* THE DIAL WRAPS. Six lenses is 339px of chip in the panel's 304px of room, so the last
+         one was sliced in half by the panel's edge at the default interface size and more of
+         them were at the larger ones (the chips are flex:1 off a zero basis, but a chip cannot
+         shrink below its own name, so the row overflowed and #hudbody clipped it). A plain wrap
+         would leave Bare alone on a full-width row of its own; the basis is what makes it break
+         into even rows of three instead, on the same three columns as the Paper/Book/Menu row
+         underneath. 30% because three of those plus the gaps clear the panel and four cannot,
+         and border-box because the page does not set it globally: a content-box basis is 18px
+         of padding and border short of the width it is being measured against, which is enough
+         to break the row at two. */
+      #lensrow { flex-wrap: wrap; }
+      #lensrow .btn { box-sizing: border-box; flex: 1 1 30%; }
       .btn { flex: 1; text-align: center; padding: 5px 8px; border: 1px solid var(--line); border-radius: 2px; cursor: pointer; font-size: var(--fs-sm); background: #191510; color: var(--text); }
       .btn:hover { background: #211c13; border-color: var(--brass-dim); }
       .btn.off { opacity: .45; cursor: default; }
@@ -749,109 +778,114 @@
         html[data-ui="big"] #setup .setup-map { width: min(100%, 40vh); }
       }
     </style>
-    <script type="module" crossorigin src="/games/capone/assets/index-CLlUSLcj.js"></script>
+    <script type="module" crossorigin src="/games/capone/assets/index-Cs1F9jjD.js"></script>
     <link rel="stylesheet" crossorigin href="/games/capone/assets/index-KMOgOAZl.css">
   </head>
   <body>
     <div id="app"></div>
     <div id="hud">
-      <div class="cashrow" id="cashrow">
-        <span id="money">$0</span>
-        <span class="cashcaret" id="cashcaret">&#9662;</span>
-      </div>
-      <div class="books hidden" id="books">
+      <div id="hudbody">
+        <div class="cashrow" id="cashrow">
+          <span id="money">$0</span>
+          <span class="cashcaret" id="cashcaret">&#9662;</span>
+        </div>
+        <div class="books hidden" id="books">
+          <div class="stats">
+            <div><span class="k">Income</span><span id="inc">$0</span></div>
+            <div><span class="k">Payroll</span><span id="pay">$0</span></div>
+            <div><span class="k">Dirty</span><span id="dirty">$0</span></div>
+            <div><span class="k">Doors</span><span id="owned">0</span></div>
+            <div><span class="k">Standing</span><span id="legitfile" title="">0%</span></div>
+            <div id="favorrow"><span class="k">Favor</span><span id="favor">0</span></div>
+          </div>
+          <div class="btns" id="civicbtns">
+            <div class="btn" id="civic0"></div>
+            <div class="btn" id="civic1"></div>
+            <div class="btn" id="civic2"></div>
+          </div>
+          <div class="btns" id="seatbtns">
+            <div class="btn" id="seat0"></div>
+            <div class="btn" id="seat1"></div>
+            <div class="btn" id="seat2"></div>
+          </div>
+        </div>
+        <div class="timebox">
+          <div class="dayrow">
+            <span class="k">Day</span><span id="day">1</span>
+            <svg class="sunarc" viewBox="0 0 96 24" aria-hidden="true">
+              <title id="arctitle"></title>
+              <rect id="arcsky" x="0" y="0" width="96" height="22" rx="5" fill="#0b0f14"/>
+              <line class="sa-hz" x1="4" y1="17" x2="92" y2="17"/>
+              <path class="sa-arc" d="M8 17 Q48 -8 88 17" fill="none"/>
+              <line class="sa-tick" x1="48" y1="16" x2="48" y2="18.5"/>
+              <line class="sa-tick" x1="8" y1="16" x2="8" y2="18.5"/>
+              <line class="sa-tick" x1="88" y1="16" x2="88" y2="18.5"/>
+              <g id="sunicon" fill="#ffd24a" transform="translate(8 17)">
+                <circle r="2.9"/>
+                <path d="M-6.1 -0.5 h2 v1 h-2 z M4.1 -0.5 h2 v1 h-2 z M-0.5 -6.1 h1 v2 h-1 z M-0.5 4.1 h1 v2 h-1 z M-4.4 -3.7 l1.4 1.4 -0.7 0.7 -1.4 -1.4 z M3 3 l1.4 1.4 -0.7 0.7 -1.4 -1.4 z M3.7 -4.4 l0.7 0.7 -1.4 1.4 -0.7 -0.7 z M-3 3.7 l0.7 -0.7 1.4 1.4 -0.7 0.7 z"/>
+              </g>
+              <g id="moonicon" transform="translate(8 17)" style="display:none">
+                <path d="M 1.6 -3.2 A 3.7 3.7 0 1 0 1.6 3.2 A 3 3 0 1 1 1.6 -3.2 Z" fill="#d3dcef"/>
+              </g>
+            </svg>
+          </div>
+          <div class="speed" id="speed" role="radiogroup">
+            <div class="sbtn" data-s="0" role="radio" aria-checked="false" tabindex="-1">&#10074;&#10074;</div>
+            <div class="sbtn" data-s="1" role="radio" aria-checked="false" tabindex="-1">&#9654;</div>
+            <div class="sbtn" data-s="2" role="radio" aria-checked="false" tabindex="-1">&#9654;&#9654;</div>
+            <div class="sbtn" data-s="3" role="radio" aria-checked="false" tabindex="-1">&#9654;&#9654;&#9654;</div>
+          </div>
+          <div id="nightgov" class="nightgov" style="display:none"></div>
+        </div>
         <div class="stats">
-          <div><span class="k">Income</span><span id="inc">$0</span></div>
-          <div><span class="k">Payroll</span><span id="pay">$0</span></div>
-          <div><span class="k">Dirty</span><span id="dirty">$0</span></div>
-          <div><span class="k">Doors</span><span id="owned">0</span></div>
-          <div><span class="k">Standing</span><span id="legitfile" title="">0%</span></div>
-          <div id="favorrow"><span class="k">Favor</span><span id="favor">0</span></div>
+          <div id="notorow" style="display:none"><span class="k">Notoriety</span><span id="notofile" title="">0%</span></div>
+          <div id="fedrow" style="display:none"><span class="k">The File</span><span id="fedfile" title="">0%</span></div>
         </div>
-        <div class="btns" id="civicbtns">
-          <div class="btn" id="civic0"></div>
-          <div class="btn" id="civic1"></div>
-          <div class="btn" id="civic2"></div>
+        <div class="btns" id="fedbtns" style="display:none">
+          <div class="btn" id="lawyerbtn">Counsel</div>
+          <div class="btn" id="jurybtn">Jury</div>
+          <div class="btn" id="retirebtn">Retire</div>
         </div>
-        <div class="btns" id="seatbtns">
-          <div class="btn" id="seat0"></div>
-          <div class="btn" id="seat1"></div>
-          <div class="btn" id="seat2"></div>
+        <div class="btns" id="epibtns" style="display:none">
+          <div class="btn" id="epiloguebtn"></div>
+        </div>
+        <div class="btns" id="untbtns" style="display:none">
+          <div class="btn" id="untouchablebtn"></div>
+        </div>
+        <div class="btns" id="commbtns" style="display:none">
+          <div class="btn" id="commissionbtn"></div>
+        </div>
+        <div class="btns" id="chairbtns" style="display:none">
+          <div class="btn" id="chairbtn"></div>
+        </div>
+        <div class="btns" id="exitbtns" style="display:none">
+          <div class="btn" id="exitsbtn"></div>
+        </div>
+        <div class="crewhead">Crew <span class="pr" id="crewprompt"></span></div>
+        <div id="crewbox">
+          <div class="crew" id="crew"></div>
+          <div id="crewdetail"></div>
+        </div>
+        <!-- the dial (DESIGN-LENSES.md): the chips are written by main.ts from copy/ui.ts, and the
+             row is always here, so the player learns the control once instead of watching a
+             button appear at the vouch -->
+        <div class="btns" id="lensrow" role="radiogroup"></div>
+        <div class="btns">
+          <div class="btn" id="paperbtn"></div>
+          <div class="btn" id="bookbtn"></div>
+          <div class="btn" id="menubtn"></div>
         </div>
       </div>
-      <div class="timebox">
-        <div class="dayrow">
-          <span class="k">Day</span><span id="day">1</span>
-          <svg class="sunarc" viewBox="0 0 96 24" aria-hidden="true">
-            <title id="arctitle"></title>
-            <rect id="arcsky" x="0" y="0" width="96" height="22" rx="5" fill="#0b0f14"/>
-            <line class="sa-hz" x1="4" y1="17" x2="92" y2="17"/>
-            <path class="sa-arc" d="M8 17 Q48 -8 88 17" fill="none"/>
-            <line class="sa-tick" x1="48" y1="16" x2="48" y2="18.5"/>
-            <line class="sa-tick" x1="8" y1="16" x2="8" y2="18.5"/>
-            <line class="sa-tick" x1="88" y1="16" x2="88" y2="18.5"/>
-            <g id="sunicon" fill="#ffd24a" transform="translate(8 17)">
-              <circle r="2.9"/>
-              <path d="M-6.1 -0.5 h2 v1 h-2 z M4.1 -0.5 h2 v1 h-2 z M-0.5 -6.1 h1 v2 h-1 z M-0.5 4.1 h1 v2 h-1 z M-4.4 -3.7 l1.4 1.4 -0.7 0.7 -1.4 -1.4 z M3 3 l1.4 1.4 -0.7 0.7 -1.4 -1.4 z M3.7 -4.4 l0.7 0.7 -1.4 1.4 -0.7 -0.7 z M-3 3.7 l0.7 -0.7 1.4 1.4 -0.7 0.7 z"/>
-            </g>
-            <g id="moonicon" transform="translate(8 17)" style="display:none">
-              <path d="M 1.6 -3.2 A 3.7 3.7 0 1 0 1.6 3.2 A 3 3 0 1 1 1.6 -3.2 Z" fill="#d3dcef"/>
-            </g>
-          </svg>
+      <!-- the foot: read while the cursor is out on the city, so it never scrolls away -->
+      <div id="hudfoot">
+        <div class="hint" id="hover"></div>
+        <div class="obj" id="objective"></div>
+        <div class="obj-how hidden" id="objhow"></div>
+        <div id="loghist" class="hidden"></div>
+        <div class="logrow" id="logrow">
+          <span class="msg" id="msg"></span>
+          <span class="logcaret" id="logcaret">&#9652;</span>
         </div>
-        <div class="speed" id="speed" role="radiogroup">
-          <div class="sbtn" data-s="0" role="radio" aria-checked="false" tabindex="-1">&#10074;&#10074;</div>
-          <div class="sbtn" data-s="1" role="radio" aria-checked="false" tabindex="-1">&#9654;</div>
-          <div class="sbtn" data-s="2" role="radio" aria-checked="false" tabindex="-1">&#9654;&#9654;</div>
-          <div class="sbtn" data-s="3" role="radio" aria-checked="false" tabindex="-1">&#9654;&#9654;&#9654;</div>
-        </div>
-        <div id="nightgov" class="nightgov" style="display:none"></div>
-      </div>
-      <div class="stats">
-        <div id="notorow" style="display:none"><span class="k">Notoriety</span><span id="notofile" title="">0%</span></div>
-        <div id="fedrow" style="display:none"><span class="k">The File</span><span id="fedfile" title="">0%</span></div>
-      </div>
-      <div class="btns" id="fedbtns" style="display:none">
-        <div class="btn" id="lawyerbtn">Counsel</div>
-        <div class="btn" id="jurybtn">Jury</div>
-        <div class="btn" id="retirebtn">Retire</div>
-      </div>
-      <div class="btns" id="epibtns" style="display:none">
-        <div class="btn" id="epiloguebtn"></div>
-      </div>
-      <div class="btns" id="untbtns" style="display:none">
-        <div class="btn" id="untouchablebtn"></div>
-      </div>
-      <div class="btns" id="commbtns" style="display:none">
-        <div class="btn" id="commissionbtn"></div>
-      </div>
-      <div class="btns" id="chairbtns" style="display:none">
-        <div class="btn" id="chairbtn"></div>
-      </div>
-      <div class="btns" id="exitbtns" style="display:none">
-        <div class="btn" id="exitsbtn"></div>
-      </div>
-      <div class="crewhead">Crew <span class="pr" id="crewprompt"></span></div>
-      <div id="crewbox">
-        <div class="crew" id="crew"></div>
-        <div id="crewdetail"></div>
-      </div>
-      <!-- the dial (DESIGN-LENSES.md): the chips are written by main.ts from copy/ui.ts, and the
-           row is always here, so the player learns the control once instead of watching a
-           button appear at the vouch -->
-      <div class="btns" id="lensrow" role="radiogroup"></div>
-      <div class="btns">
-        <div class="btn" id="paperbtn"></div>
-        <div class="btn" id="bookbtn"></div>
-        <div class="btn" id="menubtn"></div>
-      </div>
-      <div class="hint" id="hover"></div>
-      <div class="obj" id="objective"></div>
-      <div class="obj-how hidden" id="objhow"></div>
-      <div id="loghist" class="hidden"></div>
-      <div class="logrow" id="logrow">
-        <span class="msg" id="msg"></span>
-        <span class="logcaret" id="logcaret">&#9652;</span>
       </div>
     </div>
     <div id="bizpanel" class="hidden"></div>
