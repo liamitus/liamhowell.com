@@ -509,6 +509,22 @@
       .bp-log .d { color: var(--dimc); font-variant-numeric: tabular-nums; margin-right: 5px; }
       .bp-log .good { color: #9fd6a8; }
       .bp-log .bad { color: var(--blood); }
+      /* THE VERB ON THE CHIP (main.ts dressCursor): what the right button would do to the thing named,
+         as a glyph and a coloured edge. Attack red, cover cyan, the rest gold: the ping's own colours,
+         so the promise and the answer match. The glyphs are alpha masks, so one colour token paints both. */
+      .hint[data-verb] { border-left: 3px solid var(--verb-c, var(--gold)); padding-left: 7px; }
+      .hint[data-verb]:empty { padding-right: 6px; }
+      .hint[data-verb]:empty::before { margin-right: 0; }
+      .hint[data-verb]::before { content: ''; display: inline-block; width: 14px; height: 14px; margin: 0 6px -2px 0; background: var(--verb-c, var(--gold)); -webkit-mask: var(--verb-g) center / contain no-repeat; mask: var(--verb-g) center / contain no-repeat; }
+      .hint[data-verb="move"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2v7'/%3E%3Cpath d='M4.5 6.5 8 10l3.5-3.5'/%3E%3Cpath d='M3 13.5h10'/%3E%3C/svg%3E"); }
+      .hint[data-verb="drive"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Ccircle cx='8' cy='8' r='1.6'/%3E%3Cpath d='M8 9.6V14M6.6 7.2 2.2 6.4M9.4 7.2l4.4-.8'/%3E%3C/svg%3E"); }
+      .hint[data-verb="attack"] { --verb-c: #ff5a4a; --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='5'/%3E%3Cpath d='M8 1v3.5M8 11.5V15M1 8h3.5M11.5 8H15'/%3E%3C/svg%3E"); }
+      .hint[data-verb="cover"] { --verb-c: #4fd6e6; --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 1.5 13.5 3.5v4.5c0 3.2-2.4 5.6-5.5 6.5C4.9 13.6 2.5 11.2 2.5 8V3.5z'/%3E%3C/svg%3E"); }
+      .hint[data-verb="word"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 3.5h11v7h-6l-3 3v-3h-2z'/%3E%3C/svg%3E"); }
+      .hint[data-verb="door"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='2' width='8' height='12'/%3E%3Ccircle cx='10' cy='8.5' r='.9' fill='black' stroke='none'/%3E%3C/svg%3E"); }
+      .hint[data-verb="car"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 10.5V8l2-3.5h8L14 8v2.5H2z'/%3E%3Ccircle cx='4.8' cy='11.5' r='1.4'/%3E%3Ccircle cx='11.2' cy='11.5' r='1.4'/%3E%3C/svg%3E"); }
+      .hint[data-verb="man"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='4.5' r='2.6'/%3E%3Cpath d='M3 14.5c0-3.3 2.2-5 5-5s5 1.7 5 5'/%3E%3C/svg%3E"); }
+      .hint[data-verb="menu"] { --verb-g: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5h10M3 8h10M3 11.5h10'/%3E%3C/svg%3E"); }
       #ctxmenu { position: fixed; z-index: 60; min-width: 10rem; background: rgba(18,15,11,.97); border: 1px solid var(--line); border-radius: 3px; padding: 4px; user-select: none; font-size: var(--fs-sm); box-shadow: 0 8px 26px rgba(0,0,0,.5); }
       #ctxmenu.hidden { display: none; }
       #ctxmenu .ctx-head { color: var(--muted); font-size: var(--fs-xs); padding: 4px 8px 6px; border-bottom: 1px solid var(--line-dim); margin-bottom: 4px; }
@@ -880,7 +896,7 @@
         box-shadow: 0 8px 24px rgba(0,0,0,.55); }
       #tipcard.hidden { display: none; }
     </style>
-    <script type="module" crossorigin src="/games/capone/assets/index-B_NMrNag.js"></script>
+    <script type="module" crossorigin src="/games/capone/assets/index-CM04s_TI.js"></script>
     <link rel="stylesheet" crossorigin href="/games/capone/assets/index-KMOgOAZl.css">
   </head>
   <body>
